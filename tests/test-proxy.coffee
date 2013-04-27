@@ -3,7 +3,7 @@ request = require 'supertest'
 connect = require 'connect'
 http = require 'http'
 req = require 'request'
-proxy = require '../'
+proxy = require '../lib/proxy'
 
 
 work1 = connect()
