@@ -1,0 +1,35 @@
+{
+  "name": "easyproxy",
+  "main": "index.js",
+  "version": "0.0.1",
+  "description": "基于tcp的反向代理",
+  "author": {
+    "name": "继风",
+    "email": "wade428@163.com"
+  },
+  "engines": {
+    "node": ">=0.6.0"
+  },
+  "homepage": "https://github.com/jifeng/easyproxy",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jifeng/easyproxy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jifeng/easyproxy/issues"
+  },
+  "devDependencies": {
+    "request": "*",
+    "connect": "*",
+    "supertest": "*",
+    "coffee-script": "*",
+    "mocha": "*",
+    "expect.js": "*",
+    "jscover": "*"
+  },
+  "scripts": {
+    "prepublish": "make release",
+    "postpublish": "make clean",
+    "test": "make test-cov"
+  }
+}
