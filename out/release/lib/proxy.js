@@ -74,12 +74,12 @@ Proxy = (function(_super) {
       var first, socket;
 
       first = true;
-      socket = void 0;
+      socket = null;
       c.on('data', function(data) {
         var header, path;
 
         header = getHead(data);
-        if (first === true && socket === void 0) {
+        if (first === true && socket === null) {
           first = false;
           path = _this._find(header);
           if (path === void 0) {
@@ -90,12 +90,12 @@ Proxy = (function(_super) {
             return socket.pipe(c);
           });
         }
-        if (socket !== void 0) {
+        if (socket !== null) {
           return socket.write(data);
         }
       });
       return c.on('end', function() {
-        if (socket !== void 0) {
+        if (socket !== null) {
           return socket.end();
         }
       });

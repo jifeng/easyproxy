@@ -52,10 +52,10 @@ class Proxy extends events.EventEmitter
     @apps = @options.apps || []
     @server = net.createServer (c) =>
       first = true
-      socket = undefined
+      socket = null
       c.on 'data', (data) =>
         header = getHead data
-        if first is true and socket is undefined
+        if first is true and socket is null
           first = false
           path = @_find(header)
           # 模拟404返回
@@ -64,10 +64,10 @@ class Proxy extends events.EventEmitter
             return c.end()
           socket = net.connect path, () ->
             socket.pipe(c)
-        socket.write(data) if socket isnt undefined 
+        socket.write(data) if socket isnt null 
 
       c.on 'end', () ->
-        socket.end() if socket isnt undefined 
+        socket.end() if socket isnt null 
 
   # 注册应用
   # app: {appname: '', host: '', path: '', prefix: ''}
