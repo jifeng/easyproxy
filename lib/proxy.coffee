@@ -1,6 +1,7 @@
 net      = require 'net'
 events   = require 'events'
 util     = require './util'
+urllib   = require 'url'
 
 
 # apps: [{appname: '', host: '', path: '', prefix: ''}, ...]
@@ -53,9 +54,13 @@ class Proxy extends events.EventEmitter
   _find: (head) ->
     for value in @apps
       if value.status is 'on'
-        #先域名,后后缀
-        if head.host.indexOf(value.host) > 0 or head.url.indexOf(value.prefix) is 0
-          return value.path
+        #先域名,判断后缀
+        if head.host.indexOf(value.host) >= 0
+          url = head.url
+          if url.indexOf(value.prefix) is 0
+            len = value.prefix.length
+            if url.length is len or url[len] is '/' or url[len] is ''
+              return value.path
 
   listen : (port, cb) ->
     @server.listen(port, cb);

@@ -68,32 +68,30 @@ describe 'proxy', () ->
     )
 
   it 'get www.work1.com should ok', (done) ->
-    req.get {url: 'http://127.0.0.1:' + port, headers: {host: 'www.work1.com'}}, (err, data) ->
+    req.get {url: 'http://127.0.0.1:' + port + '/work1', headers: {host: 'www.work1.com'}}, (err, data) ->
       e(err).to.equal null
       e(data.body).to.eql 'work1 is running'
       done();
 
+  it 'get www.work1.com/work2 should not ok', (done) ->
+    req.get {url: 'http://127.0.0.1:' + port + '/work2', headers: {host: 'www.work1.com'}}, (err, data) ->
+      e(err).not.to.equal null
+      done();
+
   it 'get www.work2.com should ok', (done) ->
-    req.get {url: 'http://127.0.0.1:' + port, headers: {host: 'www.work2.com'}}, (err, data) ->
+    req.get {url: 'http://127.0.0.1:' + port + '/work2', headers: {host: 'www.work2.com'}}, (err, data) ->
       e(err).to.equal null
       e(data.body).to.eql 'work2 is running'
+      done();
+
+  it 'get www.work2.com/work1 should not ok', (done) ->
+    req.get {url: 'http://127.0.0.1:' + port + '/work1', headers: {host: 'www.work2.com'}}, (err, data) ->
+      e(err).not.to.equal null
       done();
 
   it 'get www.work1.com should return 404', (done) ->
     req.get {url: 'http://127.0.0.1:' + port, headers: {host: 'www.xxxxx.com'}}, (err, data) ->
       e(err).not.to.equal null
-      done();
-
-  it 'get www.localhost/work1 should ok', (done) ->
-    req.get {url: 'http://127.0.0.1:' + port + '/work1'}, (err, data) ->
-      e(err).to.equal null
-      e(data.body).to.eql 'work1 is running'
-      done();
-
-  it 'get www.localhost/work2 should ok', (done) ->
-    req.get {url: 'http://127.0.0.1:' + port + '/work2'}, (err, data) ->
-      e(err).to.equal null
-      e(data.body).to.eql 'work2 is running'
       done();
 
   describe 'register unregister', ()->
@@ -104,14 +102,14 @@ describe 'proxy', () ->
       p.unregister({appname: 'work3', host: 'work3.com', path: p3, prefix: '/work3'})
 
     it 'register', (done) ->
-      req.get {url: 'http://127.0.0.1:' + port, headers: {host: 'www.work3.com'}}, (err, data) ->
+      req.get {url: 'http://127.0.0.1:' + port + '/work3', headers: {host: 'www.work3.com'}}, (err, data) ->
         e(err).to.equal null
         e(data.body).to.eql 'work3 is running'
         done();
 
     it 'unregister', ()->
       p.unregister({appname: 'work3', host: 'work3.com', path: p3, prefix: '/work3'})
-      req.get {url: 'http://127.0.0.1:' + port, headers: {host: 'www.work3.com'}}, (err, data) ->
+      req.get {url: 'http://127.0.0.1:' + port + '/work3', headers: {host: 'www.work3.com'}}, (err, data) ->
         e(err).not.to.equal null
         done();
 

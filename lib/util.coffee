@@ -41,3 +41,6 @@ exports.getHead = (data) ->
                 header[key] = data.toString('ascii', i + 2, i + 2 + hi).trim().toLowerCase();
                 return header
           valueStart = i + 2
+
+
+
