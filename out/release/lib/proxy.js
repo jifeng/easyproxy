@@ -29,12 +29,20 @@ Proxy = (function(_super) {
       first = true;
       socket = null;
       c.on('data', function(data) {
-        var header, path;
+        var header, path, pathname, urlObj;
 
         header = getHead(data);
+        urlObj = urllib.parse(header.url);
+        pathname = urlObj.pathname;
+        if (pathname[pathname.length - 1] !== '/') {
+          pathname = pathname + '/';
+        }
         if (first === true && socket === null) {
           first = false;
-          path = _this._find(header);
+          path = _this._find({
+            url: pathname,
+            host: header.host
+          });
           if (path === void 0) {
             c.write(new Buffer(status404Line));
             return c.end();
@@ -56,19 +64,20 @@ Proxy = (function(_super) {
   }
 
   Proxy.prototype.register = function(app, cb) {
-    var flag, value, _i, _len, _ref;
+    var flag, prefix;
 
-    flag = true;
     app = app || {};
-    _ref = this.apps;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      value = _ref[_i];
-      if (value.host === app.host && value.prefix === app.prefix && value.path === app.path) {
-        flag = false;
-      }
-    }
     app.status = 'on';
-    if (flag === true) {
+    prefix = app.prefix || '';
+    if (prefix[prefix.length - 1] !== '/') {
+      prefix = prefix + '/';
+    }
+    app.prefix = prefix;
+    flag = this._find({
+      host: app.host,
+      url: app.prefix
+    });
+    if (flag === void 0) {
       this.apps.push(app);
     }
     return cb && cb();
@@ -99,7 +108,7 @@ Proxy = (function(_super) {
           url = head.url;
           if (url.indexOf(value.prefix) === 0) {
             len = value.prefix.length;
-            if (url.length === len || url[len] === '/' || url[len] === '') {
+            if (url.length === len || url[len - 1] === '/' || url[len - 1] === '') {
               return value.path;
             }
           }

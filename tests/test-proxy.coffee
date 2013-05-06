@@ -113,6 +113,38 @@ describe 'proxy', () ->
         e(err).not.to.equal null
         done();
 
+  describe 'register app registered before', () ->      
+    
+    it '/ and /work5', () ->
+      p.register({appname: 'work4', host: 'work4.com', path: p3, prefix: '/'})
+      apps = p.apps
+      e(apps.length > 0).to.equal true
+      flag = 0
+      for app in apps
+        if app.host is 'work4.com' and app.prefix is '/' and app.status is 'on'
+          flag = 1
+      e(flag).to.equal 1
+      p.register({appname: 'work5', host: 'work4.com', path: p3, prefix: '/work5'})
+      flag = 0
+      for app in apps
+        if app.host is 'work4.com' and app.prefix is '/work5' and app.status is 'on'
+          flag = 1
+      e(flag).to.equal 0
 
+    it '/work6/ and /work6/s', () ->
+      p.register({appname: 'work6', host: 'work6.com', path: p3, prefix: '/work6'})
+      apps = p.apps
+      e(apps.length > 0).to.equal true
+      flag = 0
+      for app in apps
+        if app.host is 'work6.com' and app.prefix is '/work6/' and app.status is 'on'
+          flag = 1
+      e(flag).to.equal 1
+      p.register({appname: 'work6', host: 'work6.com', path: p3, prefix: '/work6/s'})
+      flag = 0
+      for app in apps
+        if app.host is 'work6.com' and app.prefix is '/work6/s' and app.status is 'on'
+          flag = 1
+      e(flag).to.equal 0
 
 

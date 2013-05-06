@@ -19,9 +19,12 @@ class Proxy extends events.EventEmitter
       socket = null
       c.on 'data', (data) =>
         header = getHead data
+        urlObj = urllib.parse header.url
+        pathname = urlObj.pathname
+        pathname = pathname + '/'  if pathname[pathname.length - 1] isnt '/'
         if first is true and socket is null
           first = false
-          path = @_find(header)
+          path = @_find({url: pathname, host: header.host})
           # 模拟404返回
           if path is undefined
             c.write(new Buffer status404Line);
@@ -36,12 +39,13 @@ class Proxy extends events.EventEmitter
   # 注册应用
   # app: {appname: '', host: '', path: '', prefix: ''}
   register : (app, cb) ->
-    flag = true
     app = app || {}
-    for value in @apps
-      flag = false if value.host is app.host and value.prefix is app.prefix and value.path is app.path
     app.status = 'on'
-    @apps.push(app) if flag is true
+    prefix = app.prefix || '';
+    prefix = prefix + '/' if  prefix[prefix.length - 1] isnt '/'
+    app.prefix = prefix
+    flag = @_find({host: app.host, url: app.prefix})
+    @apps.push(app) if flag is undefined
     cb && cb()
 
   # 删除应用
@@ -59,7 +63,8 @@ class Proxy extends events.EventEmitter
           url = head.url
           if url.indexOf(value.prefix) is 0
             len = value.prefix.length
-            if url.length is len or url[len] is '/' or url[len] is ''
+
+            if url.length is len or url[len - 1] is '/' or url[len - 1] is ''
               return value.path
 
   listen : (port, cb) ->
