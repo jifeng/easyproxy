@@ -54,13 +54,13 @@ p.listen(80);
 
 ```
 
-游览器访问www.work1.com 或者 localhost/work1 , 结果
+游览器访问www.work1.com/work1 结果
 
 ```
 work1 is running
 ```
 
-游览器访问www.work2.com 或者 localhost/work2 , 结果
+游览器访问www.work2.com/work2 , 结果
 
 ```
 work2 is running

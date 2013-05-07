@@ -27,7 +27,7 @@ class Proxy extends events.EventEmitter
           path = @_find({url: pathname, host: header.host})
           # 模拟404返回
           if path is undefined
-            c.write(new Buffer status404Line);
+            c.write(new Buffer status404Line)
             return c.end()
           socket = net.connect path, () ->
             socket.pipe(c)

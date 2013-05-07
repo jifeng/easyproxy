@@ -1,7 +1,7 @@
 
 connect = require 'connect'
 http = require 'http'
-proxy = require './index'
+proxy = require '../index'
 
 work1 = connect()
 work1.use (req, res, next)->

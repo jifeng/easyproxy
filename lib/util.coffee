@@ -1,7 +1,7 @@
 
 
 
-exports.status404Line = 'HTTP/1.10x204040x20Not Found\r\n'
+exports.status404Line = 'HTTP/1.1 404 Not Found\r\n'
 
 SPACE = 0x20   # ' '
 COLON = 0x3a   # 58, :
