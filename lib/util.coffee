@@ -8,6 +8,16 @@ COLON = 0x3a   # 58, :
 NEWLINE = 0x0a # \n
 ENTER = 0x0d   # \r
 
+# 典型的http头
+# GET /work1 HTTP/1.1
+# Host: www.work1.com:1723
+# Connection: keep-alive
+# Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+# User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17
+# Accept-Encoding: gzip,deflate,sdch
+# Accept-Language: zh-CN,zh;q=0.8
+# Accept-Charset: UTF-8,*;q=0.5
+# 
 exports.getHead = (data) ->
   start = 0
   lineStart = 0
@@ -43,4 +53,11 @@ exports.getHead = (data) ->
           valueStart = i + 2
 
 
+exports.checkHead = (data) ->
+  lineCount = 0
+  for value, i in data
+    if value is  ENTER and data[i + 1] is NEWLINE
+      lineCount++;
+      return true if lineCount is 2
+  return false
 

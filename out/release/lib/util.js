@@ -55,3 +55,19 @@ exports.getHead = function(data) {
     }
   }
 };
+
+exports.checkHead = function(data) {
+  var i, lineCount, value, _i, _len;
+
+  lineCount = 0;
+  for (i = _i = 0, _len = data.length; _i < _len; i = ++_i) {
+    value = data[i];
+    if (value === ENTER && data[i + 1] === NEWLINE) {
+      lineCount++;
+      if (lineCount === 2) {
+        return true;
+      }
+    }
+  }
+  return false;
+};

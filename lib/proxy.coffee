@@ -15,15 +15,21 @@ class Proxy extends events.EventEmitter
 
     @apps = @options.apps || []
     @server = net.createServer (c) =>
-      first = true
       socket = null
+      chunks = []
+      flag = false
       c.on 'data', (data) =>
-        header = getHead data
+        if flag is false
+          chunks.push data
+          listBuffer = Buffer.concat chunks
+          return if (util.checkHead(listBuffer)) is false 
+
+        header = getHead listBuffer
         urlObj = urllib.parse header.url
         pathname = urlObj.pathname
         pathname = pathname + '/'  if pathname[pathname.length - 1] isnt '/'
-        if first is true and socket is null
-          first = false
+
+        if socket is null and flag is false
           path = @_find({url: pathname, host: header.host})
           # 模拟404返回
           if path is undefined
@@ -31,10 +37,13 @@ class Proxy extends events.EventEmitter
             return c.end()
           socket = net.connect path, () ->
             socket.pipe(c)
-        socket.write(data) if socket isnt null 
-
+          flag = true
+          return socket.write listBuffer
+      return socket.write(data) if socket isnt null and flag is true
       c.on 'end', () ->
-        socket.end() if socket isnt null 
+        if socket isnt null
+          socket.end()
+          socket = null
 
   # 注册应用
   # app: {appname: '', host: '', path: '', prefix: ''}

@@ -24,21 +24,28 @@ Proxy = (function(_super) {
     this.options = options || {};
     this.apps = this.options.apps || [];
     this.server = net.createServer(function(c) {
-      var first, socket;
+      var chunks, flag, socket;
 
-      first = true;
       socket = null;
+      chunks = [];
+      flag = false;
       c.on('data', function(data) {
-        var header, path, pathname, urlObj;
+        var header, listBuffer, path, pathname, urlObj;
 
-        header = getHead(data);
+        if (flag === false) {
+          chunks.push(data);
+          listBuffer = Buffer.concat(chunks);
+          if ((util.checkHead(listBuffer)) === false) {
+            return;
+          }
+        }
+        header = getHead(listBuffer);
         urlObj = urllib.parse(header.url);
         pathname = urlObj.pathname;
         if (pathname[pathname.length - 1] !== '/') {
           pathname = pathname + '/';
         }
-        if (first === true && socket === null) {
-          first = false;
+        if (socket === null && flag === false) {
           path = _this._find({
             url: pathname,
             host: header.host
@@ -50,14 +57,17 @@ Proxy = (function(_super) {
           socket = net.connect(path, function() {
             return socket.pipe(c);
           });
-        }
-        if (socket !== null) {
-          return socket.write(data);
+          flag = true;
+          return socket.write(listBuffer);
         }
       });
+      if (socket !== null && flag === true) {
+        return socket.write(data);
+      }
       return c.on('end', function() {
         if (socket !== null) {
-          return socket.end();
+          socket.end();
+          return socket = null;
         }
       });
     });
