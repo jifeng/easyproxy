@@ -94,16 +94,35 @@ Proxy = (function(_super) {
   };
 
   Proxy.prototype.unregister = function(app, cb) {
-    var value, _i, _len, _ref;
+    var prefix, value, _i, _j, _len, _len1, _ref, _ref1;
 
-    app = app || {};
-    _ref = this.apps;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      value = _ref[_i];
-      if (value.host === app.host && value.prefix === app.prefix && value.path === app.path) {
-        value.status = 'off';
+    if (typeof app === 'string') {
+      _ref = this.apps;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        value = _ref[_i];
+        if (value.appname === app) {
+          value.status = 'off';
+        }
+      }
+    } else {
+      app = app || {};
+      prefix = app.prefix || '';
+      if (prefix[prefix.length - 1] !== '/') {
+        prefix += '/';
+      }
+      _ref1 = this.apps;
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        value = _ref1[_j];
+        if (value.host === app.host && value.prefix === prefix && value.path === app.path) {
+          value.status = 'off';
+        }
       }
     }
+    return cb && cb();
+  };
+
+  Proxy.prototype.clear = function(cb) {
+    this.apps = [];
     return cb && cb();
   };
 
@@ -131,8 +150,8 @@ Proxy = (function(_super) {
     return this.server.listen(port, cb);
   };
 
-  Proxy.prototype.close = function() {
-    return this.server.close();
+  Proxy.prototype.close = function(cb) {
+    return this.server.close(cb);
   };
 
   return Proxy;

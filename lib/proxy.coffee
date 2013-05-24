@@ -59,9 +59,20 @@ class Proxy extends events.EventEmitter
 
   # 删除应用
   unregister: (app, cb) ->
-    app = app || {}
-    for value in @apps
-      value.status = 'off' if value.host is app.host and value.prefix is app.prefix and value.path is app.path
+    if typeof app is 'string'
+      for value in @apps
+        value.status = 'off' if value.appname is app
+    else
+      app = app || {}
+      prefix = app.prefix || ''
+      prefix += '/' if prefix[prefix.length - 1] isnt '/'
+      for value in @apps
+        value.status = 'off' if value.host is app.host and value.prefix is prefix and value.path is app.path
+    cb && cb()
+
+  # 清除所有注册的应用
+  clear: (cb) ->
+    @apps = []
     cb && cb()
 
   _find: (head) ->
@@ -79,8 +90,8 @@ class Proxy extends events.EventEmitter
   listen : (port, cb) ->
     @server.listen(port, cb);
 
-  close: ()->
-    @server.close()
+  close: (cb)->
+    @server.close(cb)
 
 module.exports = (options) ->
   new Proxy options

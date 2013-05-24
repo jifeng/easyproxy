@@ -47,6 +47,7 @@ describe 'proxy', () ->
     server1.close()
     server2.close()
     server3.close()
+    p.clear()
     p.close()
 
   it 'mock work1 should ok', (done) ->
@@ -95,10 +96,10 @@ describe 'proxy', () ->
       done();
 
   describe 'register unregister', ()->
-    before ()->
+    beforeEach ()->
       p.register({appname: 'work3', host: 'work3.com', path: p3, prefix: '/work3'})
 
-    after ()->
+    afterEach ()->
       p.unregister({appname: 'work3', host: 'work3.com', path: p3, prefix: '/work3'})
 
     it 'register', (done) ->
@@ -107,8 +108,14 @@ describe 'proxy', () ->
         e(data.body).to.eql 'work3 is running'
         done();
 
-    it 'unregister', ()->
+    it 'unregister', (done)->
       p.unregister({appname: 'work3', host: 'work3.com', path: p3, prefix: '/work3'})
+      req.get {url: 'http://127.0.0.1:' + port + '/work3', headers: {host: 'www.work3.com'}}, (err, data) ->
+        e(err).not.to.equal null
+        done();
+
+    it 'unregister appname', (done)->
+      p.unregister('work3')
       req.get {url: 'http://127.0.0.1:' + port + '/work3', headers: {host: 'www.work3.com'}}, (err, data) ->
         e(err).not.to.equal null
         done();
