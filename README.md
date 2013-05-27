@@ -79,6 +79,10 @@ p.register({appname: 'work1', host: 'work1.com', path: p1, prefix: '/work1'});
 p.unregister({appname: 'work1', host: 'work1.com', path: p1, prefix: '/work1'});
 ```
 
+### 清空全部应用
+```js
+p.clear()
+```
 注销某个应用的全部实例
 ```js
 p.unregister('work1');
