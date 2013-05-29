@@ -45,8 +45,8 @@ var server2 = http.createServer(work2)
 var p2 = './work2.sock'
 
 var p = proxy();
-p.register({appname: 'work1', host: 'work1.com', path: p1, prefix: '/work1'});
-p.register({appname: 'work2', host: 'work2.com', path: p2, prefix: '/work2'});
+p.register({appname: 'work1', host: 'www.work1.com', path: p1, prefix: '/work1'});
+p.register({appname: 'work2', host: 'www.work2.com', path: p2, prefix: '/work2'});
 
 server1.listen(p1);
 server2.listen(p2);

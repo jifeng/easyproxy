@@ -1,7 +1,7 @@
 {
   "name": "easyproxy",
   "main": "index.js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "基于tcp的反向代理",
   "author": {
     "name": "继风",
