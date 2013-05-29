@@ -38,6 +38,9 @@ Proxy = (function(_super) {
         host: host
       });
       if (path === void 0) {
+        if (_this.options.noHandler !== void 0) {
+          return _this.options.noHandler(req, res);
+        }
         res.statusCode = 404;
         return res.end('app is not registered' + JSON.stringify({
           url: pathname,

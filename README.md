@@ -7,8 +7,9 @@ easyproxy
 
 ## 特点
 * 反向代理功能
-* 支持建立在tcp上的所有协议(HTTP, HTTPS, WebSockets)
-* 与[http-proxy](https://github.com/nodejitsu/node-http-proxy)相比，easyproxy直接在tcp层进行解析，降低性能损耗
+* 支持建立在http上的所有协议(HTTP, HTTPS, WebSockets)
+* 与[http-proxy](https://github.com/nodejitsu/node-http-proxy)相比，easyproxy跟后端具体服务是走本地socketPath，降低性能损耗
+* easyproxy只转发本台服务器上的服务,不跨服务器转发
 
 ## 安装
 ```bash
@@ -89,3 +90,10 @@ p.unregister('work1');
 p.clear()
 ```
 
+### 扩展
+#### 请求未注册应用
+```js
+var p = proxy({noHandler: function (req, res) {
+  ......
+}});
+```

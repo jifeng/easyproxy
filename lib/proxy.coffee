@@ -25,6 +25,8 @@ class Proxy extends events.EventEmitter
       path = @_find({url: pathname, host: host})
 
       if path is undefined
+        if @options.noHandler isnt undefined
+          return @options.noHandler req, res
         res.statusCode = 404
         return res.end('app is not registered' + JSON.stringify({url: pathname, host: host}))
 

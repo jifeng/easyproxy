@@ -173,4 +173,28 @@ describe 'proxy', () ->
           flag = 1
       e(flag).to.equal 0
 
+  describe 'noHandler exist', ()->
+    _noHandler = p.options.noHandler
+    before ()->
+      p.options.noHandler = (req, res) ->
+        res.statusCode = 404
+        res.end('noHandler exist')    
+
+    after ()->
+      p.options.noHandler = _noHandler
+
+    it 'get www.work1.com/work2 should not ok', (done) ->
+      req.get {url: 'http://127.0.0.1:' + port + '/work2', headers: {host: 'www.work1.com'}}, (err, data) ->
+        e(err).to.equal null
+        e(data.statusCode).to.equal 404
+        e(data.body).to.eql 'noHandler exist'
+        done();
+
+
+
+
+
+
+
+
 
