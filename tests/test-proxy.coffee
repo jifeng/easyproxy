@@ -7,6 +7,9 @@ proxy = require '../lib/proxy'
 
 
 work1 = connect()
+work1.use '/work1/post', connect.bodyParser()
+work1.use '/work1/post', (req, res, next) ->
+  res.end JSON.stringify(req.body)
 work1.use (req, res, next)->
   res.statusCode = 200
   res.setHeader 'Content-Type', 'text/plain'
@@ -31,8 +34,8 @@ server3 = http.createServer(work3)
 p3 = './work3.sock'
 
 p = proxy()
-p.register({appname: 'work1', host: 'work1.com', path: p1, prefix: '/work1'})
-p.register({appname: 'work2', host: 'work2.com', path: p2, prefix: '/work2'})
+p.register({appname: 'work1', host: 'www.work1.com', path: p1, prefix: '/work1'})
+p.register({appname: 'work2', host: 'www.work2.com', path: p2, prefix: '/work2'})
 port = Math.floor(Math.random()* 9000 + 1000)
 
 describe 'proxy', () ->
@@ -74,9 +77,21 @@ describe 'proxy', () ->
       e(data.body).to.eql 'work1 is running'
       done();
 
+  it 'post www.work1.com/work1/post should ok', (done) ->
+    options = {
+      url: 'http://127.0.0.1:' + port + '/work1/post', 
+      headers: {host: 'www.work1.com'},
+      form: {a: '1', b: 'b'}
+    }
+    req.get options, (err, data) ->
+      e(err).to.equal null
+      e(data.body).to.eql '{"a":"1","b":"b"}'
+      done();
+
   it 'get www.work1.com/work2 should not ok', (done) ->
     req.get {url: 'http://127.0.0.1:' + port + '/work2', headers: {host: 'www.work1.com'}}, (err, data) ->
-      e(err).not.to.equal null
+      e(err).to.equal null
+      e(data.statusCode).to.equal 404
       done();
 
   it 'get www.work2.com should ok', (done) ->
@@ -87,12 +102,14 @@ describe 'proxy', () ->
 
   it 'get www.work2.com/work1 should not ok', (done) ->
     req.get {url: 'http://127.0.0.1:' + port + '/work1', headers: {host: 'www.work2.com'}}, (err, data) ->
-      e(err).not.to.equal null
+      e(err).to.equal null
+      e(data.statusCode).to.equal 404
       done();
 
   it 'get www.work1.com should return 404', (done) ->
     req.get {url: 'http://127.0.0.1:' + port, headers: {host: 'www.xxxxx.com'}}, (err, data) ->
-      e(err).not.to.equal null
+      e(err).to.equal null
+      e(data.statusCode).to.equal 404
       done();
 
   describe 'register unregister', ()->
@@ -111,13 +128,15 @@ describe 'proxy', () ->
     it 'unregister', (done)->
       p.unregister({appname: 'work3', host: 'work3.com', path: p3, prefix: '/work3'})
       req.get {url: 'http://127.0.0.1:' + port + '/work3', headers: {host: 'www.work3.com'}}, (err, data) ->
-        e(err).not.to.equal null
+        e(err).to.equal null
+        e(data.statusCode).to.equal 404
         done();
 
     it 'unregister appname', (done)->
       p.unregister('work3')
       req.get {url: 'http://127.0.0.1:' + port + '/work3', headers: {host: 'www.work3.com'}}, (err, data) ->
-        e(err).not.to.equal null
+        e(err).to.equal null
+        e(data.statusCode).to.equal 404
         done();
 
   describe 'register app registered before', () ->      

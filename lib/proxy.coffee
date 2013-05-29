@@ -1,49 +1,43 @@
 net      = require 'net'
 events   = require 'events'
-util     = require './util'
 urllib   = require 'url'
+http     = require 'http'
 
 
 # apps: [{appname: '', host: '', path: '', prefix: ''}, ...]
-
-status404Line = util.status404Line
-getHead = util.getHead
 
 class Proxy extends events.EventEmitter
   constructor : (options) ->
     @options = options || {}
 
     @apps = @options.apps || []
-    @server = net.createServer (c) =>
-      socket = null
-      chunks = []
-      flag = false
-      c.on 'data', (data) =>
-        if flag is false
-          chunks.push data
-          listBuffer = Buffer.concat chunks
-          return if (util.checkHead(listBuffer)) is false 
+    @server = http.createServer (req, res) =>
+      url = req.url
 
-        header = getHead listBuffer
-        urlObj = urllib.parse header.url
-        pathname = urlObj.pathname
-        pathname = pathname + '/'  if pathname[pathname.length - 1] isnt '/'
+      urlObj = urllib.parse url
+      pathname = urlObj.pathname
+      pathname = pathname + '/'  if pathname[pathname.length - 1] isnt '/'
+      headers = req.headers
+      host = headers.host
 
-        if socket is null and flag is false
-          path = @_find({url: pathname, host: header.host})
-          # 模拟404返回
-          if path is undefined
-            c.write(new Buffer status404Line)
-            return c.end()
-          socket = net.connect path, () ->
-            socket.pipe(c)
-          flag = true
-          return socket.write listBuffer
-      return socket.write(data) if socket isnt null and flag is true
-      c.on 'end', () ->
-        if socket isnt null
-          socket.end()
-          socket = null
+      if host.indexOf(':') > 0
+        host = host.split(':')[0]
+      path = @_find({url: pathname, host: host})
+
+      if path is undefined
+        res.statusCode = 404
+        return res.end('app is not registered' + JSON.stringify({url: pathname, host: host}))
+
+      options = {
+        socketPath: path,
+        method: req.method,
+        headers: req.headers,
+        path: req.url
+      }
+      proxy = http.request options, (resProxy)->
+        resProxy.pipe res
+
+      req.pipe proxy
 
   # 注册应用
   # app: {appname: '', host: '', path: '', prefix: ''}
