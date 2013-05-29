@@ -13,7 +13,6 @@ class Proxy extends events.EventEmitter
     @apps = @options.apps || []
     @server = http.createServer (req, res) =>
       url = req.url
-
       urlObj = urllib.parse url
       pathname = urlObj.pathname
       pathname = pathname + '/'  if pathname[pathname.length - 1] isnt '/'
@@ -30,15 +29,16 @@ class Proxy extends events.EventEmitter
         res.statusCode = 404
         return res.end('app is not registered' + JSON.stringify({url: pathname, host: host}))
 
+      headers = req.headers
+      # headers.connection = 'close'
       options = {
         socketPath: path,
         method: req.method,
-        headers: req.headers,
+        headers: headers,
         path: req.url
       }
       proxy = http.request options, (resProxy)->
         resProxy.pipe res
-
       req.pipe proxy
 
   # 注册应用

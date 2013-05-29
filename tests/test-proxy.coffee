@@ -46,12 +46,12 @@ describe 'proxy', () ->
           p.listen port, done
 
 
-  after ()->
+  after (done)->
     server1.close()
     server2.close()
     server3.close()
     p.clear()
-    p.close()
+    p.close(done)
 
   it 'mock work1 should ok', (done) ->
     request(work1)

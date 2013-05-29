@@ -4,9 +4,9 @@ http = require 'http'
 proxy = require '../index'
 
 work1 = connect()
-work1.use connect.bodyParser()
-work1.use '/post', (req, res, next) ->
-  return res.end JSON.stringify(req.body)
+# work1.use connect.bodyParser()
+# work1.use '/post', (req, res, next) ->
+#   return res.end JSON.stringify(req.body)
 
 work1.use (req, res, next)->
   res.statusCode = 200
@@ -25,7 +25,7 @@ p2 = './work2.sock'
 
 
 p = proxy()
-p.register({appname: 'work1', host: 'www.work1.com', path: p1, prefix: '/'})
+p.register({appname: 'work1', host: 'www.work1.com', path: p1, prefix: '/work1'})
 p.register({appname: 'work2', host: 'www.work2.com', path: p2, prefix: '/work2'})
 
 server1.listen(p1);

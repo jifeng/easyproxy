@@ -47,10 +47,11 @@ Proxy = (function(_super) {
           host: host
         }));
       }
+      headers = req.headers;
       options = {
         socketPath: path,
         method: req.method,
-        headers: req.headers,
+        headers: headers,
         path: req.url
       };
       proxy = http.request(options, function(resProxy) {
