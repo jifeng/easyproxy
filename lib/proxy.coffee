@@ -83,8 +83,8 @@ class Proxy extends events.EventEmitter
             if url.length is len or url[len - 1] is '/' or url[len - 1] is ''
               return value.path
 
-  listen : (port, cb) ->
-    @server.listen(port, cb);
+  listen : (port, hostname, cb) ->
+    @server.listen(port, hostname, cb);
 
   close: (cb)->
     @server.close(cb)

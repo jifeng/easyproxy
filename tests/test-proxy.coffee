@@ -4,7 +4,13 @@ connect = require 'connect'
 http = require 'http'
 req = require 'request'
 proxy = require '../lib/proxy'
+os = require 'os'
 
+getInterIp = ()->
+  rows = os.networkInterfaces().en0
+  for row in rows
+    return row.address if row.family is 'IPv4'
+  return
 
 work1 = connect()
 work1.use '/work1/post', connect.bodyParser()
@@ -43,7 +49,7 @@ describe 'proxy', () ->
     server1.listen p1, ()->
       server2.listen p2, () ->
         server3.listen p3, () ->
-          p.listen port, done
+          p.listen port, '127.0.0.1', done
 
 
   after (done)->
@@ -190,7 +196,18 @@ describe 'proxy', () ->
         e(data.body).to.eql 'noHandler exist'
         done();
 
-
+    
+  it 'ip is inet not 127.0.0.1 should err', (done)->
+    ip = getInterIp()
+    inetp = proxy()
+    inetp.register({appname: 'work1', host: 'www.work1.com', path: p1, prefix: '/work1'})
+    inetp.listen port, ip, ()->
+      req.get {url: 'http://127.0.0.1' + port + '/work1', headers: {host: 'www.work1.com'}}, (err, data) ->
+        e(err).not.to.eql null
+        req.get {url: 'http://' + ip + ':' + port + '/work1', headers: {host: 'www.work1.com'}}, (err, data, body) ->
+          e(err).to.eql(null)
+          e(body).to.eql 'work1 is running'
+          done();
 
 
 
