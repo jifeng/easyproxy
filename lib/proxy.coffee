@@ -2,6 +2,7 @@ net      = require 'net'
 events   = require 'events'
 urllib   = require 'url'
 http     = require 'http'
+util     = require __dirname + '/util'
 
 
 # apps: [{appname: '', host: '', path: '', prefix: ''}, ...]
@@ -30,7 +31,7 @@ class Proxy extends events.EventEmitter
         return res.end('app is not registered' + JSON.stringify({url: pathname, host: host}))
 
       headers = req.headers
-      # headers.connection = 'close'
+      headers.connection = 'close'
       options = {
         socketPath: path,
         method: req.method,
@@ -38,6 +39,9 @@ class Proxy extends events.EventEmitter
         path: req.url
       }
       proxy = http.request options, (resProxy)->
+        res.setHeader('Server',  (@options && @options.appname) || 'Easyproxy')
+        for k, v of resProxy.headers
+          res.setHeader(util.upHeaderKey(k), v)
         resProxy.pipe res
       req.pipe proxy
 

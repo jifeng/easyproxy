@@ -61,3 +61,10 @@ exports.checkHead = (data) ->
       return true if lineCount is 2
   return false
 
+exports.upHeaderKey = (key)->
+  return if !key
+  arr = key.split('-')
+  newArr = []
+  for key in arr
+    newArr.push(key.substring(0,1).toUpperCase()+ key.substring(1))
+  newArr.join('-')

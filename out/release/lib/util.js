@@ -69,3 +69,17 @@ exports.checkHead = function(data) {
   }
   return false;
 };
+
+exports.upHeaderKey = function(key) {
+  var arr, newArr, _i, _len;
+  if (!key) {
+    return;
+  }
+  arr = key.split('-');
+  newArr = [];
+  for (_i = 0, _len = arr.length; _i < _len; _i++) {
+    key = arr[_i];
+    newArr.push(key.substring(0, 1).toUpperCase() + key.substring(1));
+  }
+  return newArr.join('-');
+};

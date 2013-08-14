@@ -19,6 +19,7 @@ work1.use '/work1/post', (req, res, next) ->
 work1.use (req, res, next)->
   res.statusCode = 200
   res.setHeader 'Content-Type', 'text/plain'
+  res.setHeader 'X-header', 'value'
   res.end 'work1 is running'
 server1 = http.createServer(work1)
 p1 = './work1.sock'
@@ -80,6 +81,8 @@ describe 'proxy', () ->
   it 'get www.work1.com should ok', (done) ->
     req.get {url: 'http://127.0.0.1:' + port + '/work1', headers: {host: 'www.work1.com'}}, (err, data) ->
       e(err).to.equal null
+      e(data.headers.server).to.eql 'Easyproxy'
+      e(data.headers['x-header']).to.eql 'value'
       e(data.body).to.eql 'work1 is running'
       done();
 
