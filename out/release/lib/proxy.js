@@ -48,7 +48,6 @@ Proxy = (function(_super) {
         }));
       }
       headers = req.headers;
-      headers.connection = 'close';
       options = {
         socketPath: path,
         method: req.method,
@@ -58,6 +57,7 @@ Proxy = (function(_super) {
       proxy = http.request(options, function(resProxy) {
         var k, v, _ref;
         res.setHeader('Server', (this.options && this.options.appname) || 'Easyproxy');
+        res.statusCode = resProxy.statusCode;
         _ref = resProxy.headers;
         for (k in _ref) {
           v = _ref[k];
