@@ -31,7 +31,7 @@ class Proxy extends events.EventEmitter
         return res.end('app is not registered' + JSON.stringify({url: pathname, host: host}))
 
       headers = req.headers
-      headers.connection = 'close'
+      # headers.connection = 'close'
       options = {
         socketPath: path,
         method: req.method,
@@ -40,6 +40,7 @@ class Proxy extends events.EventEmitter
       }
       proxy = http.request options, (resProxy)->
         res.setHeader('Server',  (@options && @options.appname) || 'Easyproxy')
+        res.statusCode = resProxy.statusCode
         for k, v of resProxy.headers
           res.setHeader(util.upHeaderKey(k), v)
         resProxy.pipe res
