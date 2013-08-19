@@ -13,6 +13,12 @@ getInterIp = ()->
   return
 
 work1 = connect()
+
+work1.use '/work1/redirect', (req, res, next)->
+  res.statusCode = 302;
+  res.setHeader('Location', 'http://www.taobao.com');
+  res.end();
+
 work1.use '/work1/post', connect.bodyParser()
 work1.use '/work1/post', (req, res, next) ->
   res.end JSON.stringify(req.body)
@@ -69,6 +75,16 @@ describe 'proxy', () ->
       done()
     )
 
+  it 'mock work1 redirect should ok', (done) ->
+    request(work1)
+    .get('/work1/redirect')
+    .expect(302)
+    .expect('Location', 'http://www.taobao.com')
+    .end((err, res)->
+      e(err).to.equal(null)
+      done()
+    )
+
   it 'mock work2 should ok', (done) ->
     request(work2)
     .get('/')
@@ -84,6 +100,12 @@ describe 'proxy', () ->
       e(data.headers.server).to.eql 'Easyproxy'
       e(data.headers['x-header']).to.eql 'value'
       e(data.body).to.eql 'work1 is running'
+      done();
+
+  it 'get www.work1.com redirect should ok', (done) ->
+    req.get {url: 'http://127.0.0.1:' + port + '/work1/redirect', headers: {host: 'www.work1.com'}}, (err, data) ->
+      e(err).to.equal null
+      e(data.req._header).to.contain('host: www.taobao.com')
       done();
 
   it 'post www.work1.com/work1/post should ok', (done) ->
