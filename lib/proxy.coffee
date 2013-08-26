@@ -4,7 +4,6 @@ urllib   = require 'url'
 http     = require 'http'
 util     = require __dirname + '/util'
 
-
 # apps: [{appname: '', host: '', path: '', prefix: ''}, ...]
 
 class Proxy extends events.EventEmitter
@@ -12,38 +11,41 @@ class Proxy extends events.EventEmitter
     @options = options || {}
 
     @apps = @options.apps || []
-    @server = http.createServer (req, res) =>
-      url = req.url
-      urlObj = urllib.parse url
-      pathname = urlObj.pathname
-      pathname = pathname + '/'  if pathname[pathname.length - 1] isnt '/'
-      headers = req.headers
-      host = headers.host
-
-      if host.indexOf(':') > 0
-        host = host.split(':')[0]
-      path = @_find({url: pathname, host: host})
-
-      if path is undefined
+    @server = http.createServer()
+    @server.on 'request', (req, res) =>
+      opt =  @_requestOption(req)
+      if opt.path is undefined
         if @options.noHandler isnt undefined
           return @options.noHandler req, res
         res.statusCode = 404
-        return res.end('app is not registered' + JSON.stringify({url: pathname, host: host}))
-
-      headers = req.headers
-      # headers.connection = 'close'
-      options = {
-        socketPath: path,
-        method: req.method,
-        headers: headers,
-        path: req.url
-      }
-      proxy = http.request options, (resProxy)->
+        return res.end('app is not registered' + JSON.stringify(opt.options))
+      proxy = http.request opt.options, (resProxy)->
         res.setHeader('Server',  (@options && @options.appname) || 'Easyproxy')
         res.statusCode = resProxy.statusCode
         for k, v of resProxy.headers
           res.setHeader(util.upHeaderKey(k), v)
         resProxy.pipe res
+      req.pipe proxy
+
+    @server.on 'upgrade', (req, socket, upgradeHead) =>
+      opt =  @_requestOption(req)
+      if opt.path is undefined
+        return socket.end(util.status404Line)
+
+      opt.options.headers.Upgrade =  'websocket';
+      proxy = http.request opt.options
+      proxy.on 'upgrade', (res, proxySocket, upgradeHead)->
+        headers = [
+          'HTTP/1.1 101 Switching Protocols',
+          'Upgrade: websocket',
+          'Connection: Upgrade',
+          'Sec-WebSocket-Accept: ' + res.headers['sec-websocket-accept']
+        ];
+        headers = headers.concat('', '').join('\r\n');
+        socket.write headers
+        proxySocket.pipe socket
+        socket.pipe proxySocket
+
       req.pipe proxy
 
   # 注册应用
@@ -87,6 +89,28 @@ class Proxy extends events.EventEmitter
 
             if url.length is len or url[len - 1] is '/' or url[len - 1] is ''
               return value.path
+  
+  _requestOption: (req) ->
+    url = req.url
+    urlObj = urllib.parse url
+    pathname = urlObj.pathname
+    pathname = pathname + '/'  if pathname[pathname.length - 1] isnt '/'
+    headers = req.headers
+    host = headers.host
+
+    # 如果直接设置成close,返回到游览器的Connection 也会设置成 close
+    # headers.connection = 'close'
+    if host.indexOf(':') > 0
+      host = host.split(':')[0]
+    path = @_find({url: pathname, host: host})
+    return {path: path, options: { url: pathname, host: host} } if !path
+    options = {
+      socketPath: path,
+      method: req.method,
+      headers: headers,
+      path: req.url
+    }
+    return { path: path, options: options }
 
   listen : (port, hostname, cb) ->
     @server.listen(port, hostname, cb);
