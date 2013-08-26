@@ -4,9 +4,10 @@ var server = require('./server');
 
 var proxy = easyproxy();
 
-proxy.register({appname: 'work1', host: 'localhost', path: 1723, prefix: '/'});
+path = './websocket.sock';
+proxy.register({appname: 'work1', host: 'localhost', path: path, prefix: '/'});
 
-server.listen(1723, function() {
+server.listen(path, function() {
   console.log('server is working');
 });
 
