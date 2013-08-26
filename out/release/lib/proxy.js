@@ -34,6 +34,7 @@ Proxy = (function(_super) {
       proxy = http.request(opt.options, function(resProxy) {
         var k, v, _ref;
         res.setHeader('Server', (this.options && this.options.appname) || 'Easyproxy');
+        res.statusCode = resProxy.statusCode;
         _ref = resProxy.headers;
         for (k in _ref) {
           v = _ref[k];
