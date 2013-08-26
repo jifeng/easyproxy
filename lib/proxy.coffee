@@ -21,6 +21,7 @@ class Proxy extends events.EventEmitter
         return res.end('app is not registered' + JSON.stringify(opt.options))
       proxy = http.request opt.options, (resProxy)->
         res.setHeader('Server',  (@options && @options.appname) || 'Easyproxy')
+        res.statusCode = resProxy.statusCode
         for k, v of resProxy.headers
           res.setHeader(util.upHeaderKey(k), v)
         resProxy.pipe res
