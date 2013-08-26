@@ -20,42 +20,18 @@ Proxy = (function(_super) {
     var _this = this;
     this.options = options || {};
     this.apps = this.options.apps || [];
-    this.server = http.createServer(function(req, res) {
-      var headers, host, path, pathname, proxy, url, urlObj;
-      url = req.url;
-      urlObj = urllib.parse(url);
-      pathname = urlObj.pathname;
-      if (pathname[pathname.length - 1] !== '/') {
-        pathname = pathname + '/';
-      }
-      headers = req.headers;
-      host = headers.host;
-      if (host.indexOf(':') > 0) {
-        host = host.split(':')[0];
-      }
-      path = _this._find({
-        url: pathname,
-        host: host
-      });
-      if (path === void 0) {
+    this.server = http.createServer();
+    this.server.on('request', function(req, res) {
+      var opt, proxy;
+      opt = _this._requestOption(req);
+      if (opt.path === void 0) {
         if (_this.options.noHandler !== void 0) {
           return _this.options.noHandler(req, res);
         }
         res.statusCode = 404;
-        return res.end('app is not registered' + JSON.stringify({
-          url: pathname,
-          host: host
-        }));
+        return res.end('app is not registered' + JSON.stringify(opt.options));
       }
-      headers = req.headers;
-      headers.connection = 'close';
-      options = {
-        socketPath: path,
-        method: req.method,
-        headers: headers,
-        path: req.url
-      };
-      proxy = http.request(options, function(resProxy) {
+      proxy = http.request(opt.options, function(resProxy) {
         var k, v, _ref;
         res.setHeader('Server', (this.options && this.options.appname) || 'Easyproxy');
         _ref = resProxy.headers;
@@ -64,6 +40,24 @@ Proxy = (function(_super) {
           res.setHeader(util.upHeaderKey(k), v);
         }
         return resProxy.pipe(res);
+      });
+      return req.pipe(proxy);
+    });
+    this.server.on('upgrade', function(req, socket, upgradeHead) {
+      var opt, proxy;
+      opt = _this._requestOption(req);
+      if (opt.path === void 0) {
+        return socket.end(util.status404Line);
+      }
+      opt.options.headers.Upgrade = 'websocket';
+      proxy = http.request(opt.options);
+      proxy.on('upgrade', function(res, proxySocket, upgradeHead) {
+        var headers;
+        headers = ['HTTP/1.1 101 Switching Protocols', 'Upgrade: websocket', 'Connection: Upgrade', 'Sec-WebSocket-Accept: ' + res.headers['sec-websocket-accept']];
+        headers = headers.concat('', '').join('\r\n');
+        socket.write(headers);
+        proxySocket.pipe(socket);
+        return socket.pipe(proxySocket);
       });
       return req.pipe(proxy);
     });
@@ -137,6 +131,44 @@ Proxy = (function(_super) {
         }
       }
     }
+  };
+
+  Proxy.prototype._requestOption = function(req) {
+    var headers, host, options, path, pathname, url, urlObj;
+    url = req.url;
+    urlObj = urllib.parse(url);
+    pathname = urlObj.pathname;
+    if (pathname[pathname.length - 1] !== '/') {
+      pathname = pathname + '/';
+    }
+    headers = req.headers;
+    host = headers.host;
+    if (host.indexOf(':') > 0) {
+      host = host.split(':')[0];
+    }
+    path = this._find({
+      url: pathname,
+      host: host
+    });
+    if (!path) {
+      return {
+        path: path,
+        options: {
+          url: pathname,
+          host: host
+        }
+      };
+    }
+    options = {
+      socketPath: path,
+      method: req.method,
+      headers: headers,
+      path: req.url
+    };
+    return {
+      path: path,
+      options: options
+    };
   };
 
   Proxy.prototype.listen = function(port, hostname, cb) {
