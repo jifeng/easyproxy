@@ -3,7 +3,7 @@ easyproxy
 
 ![logo](https://raw.github.com/jifeng/easyproxy/master/logo.png)
 
-基于tcp的反向代理
+基于http的反向代理
 
 ## 特点
 * 反向代理功能
