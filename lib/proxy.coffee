@@ -82,7 +82,7 @@ class Proxy extends events.EventEmitter
     for value in @apps
       if value.status is 'on'
         #先域名,判断后缀
-        if head.host.indexOf(value.host) >= 0
+        if head.host.indexOf(value.host) is 0
           url = head.url
           if url.indexOf(value.prefix) is 0
             len = value.prefix.length
