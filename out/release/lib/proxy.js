@@ -121,7 +121,7 @@ Proxy = (function(_super) {
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       value = _ref[_i];
       if (value.status === 'on') {
-        if (head.host.indexOf(value.host) >= 0) {
+        if (head.host.indexOf(value.host) === 0) {
           url = head.url;
           if (url.indexOf(value.prefix) === 0) {
             len = value.prefix.length;
