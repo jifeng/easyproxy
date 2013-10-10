@@ -102,6 +102,12 @@ describe 'proxy', () ->
       e(data.body).to.eql 'work1 is running'
       done();
 
+  it 'get stg.www.work1.com should not ok', (done) ->
+    req.get {url: 'http://127.0.0.1:' + port + '/work1', headers: {host: 'stg.www.work1.com'}}, (err, data) ->
+      e(err).to.equal null
+      e(data.statusCode).to.equal 404
+      done();
+
   it 'get www.work1.com redirect should ok', (done) ->
     req.get {url: 'http://127.0.0.1:' + port + '/work1/redirect', headers: {host: 'www.work1.com'}}, (err, data) ->
       e(err).to.equal null
@@ -145,10 +151,10 @@ describe 'proxy', () ->
 
   describe 'register unregister', ()->
     beforeEach ()->
-      p.register({appname: 'work3', host: 'work3.com', path: p3, prefix: '/work3'})
+      p.register({appname: 'work3', host: 'www.work3.com', path: p3, prefix: '/work3'})
 
     afterEach ()->
-      p.unregister({appname: 'work3', host: 'work3.com', path: p3, prefix: '/work3'})
+      p.unregister({appname: 'work3', host: 'www.work3.com', path: p3, prefix: '/work3'})
 
     it 'register', (done) ->
       req.get {url: 'http://127.0.0.1:' + port + '/work3', headers: {host: 'www.work3.com'}}, (err, data) ->
@@ -157,7 +163,7 @@ describe 'proxy', () ->
         done();
 
     it 'unregister', (done)->
-      p.unregister({appname: 'work3', host: 'work3.com', path: p3, prefix: '/work3'})
+      p.unregister({appname: 'work3', host: 'www.work3.com', path: p3, prefix: '/work3'})
       req.get {url: 'http://127.0.0.1:' + port + '/work3', headers: {host: 'www.work3.com'}}, (err, data) ->
         e(err).to.equal null
         e(data.statusCode).to.equal 404
