@@ -241,8 +241,40 @@ describe 'proxy', () ->
           done();
 
 
+  describe 'router handle casese', ()->
+    routers = [ { 
+      match: (req, res)->
+        return '/status.taobao' is req.url
+      handle: (req, res)->
+        res.statusCode = 200
+        res.end('success')
+    }, { 
+      match: (req, res)->
+        return req.headers.host.indexOf('www.monitor.com') >= 0
+      handle: (req, res)->
+        res.statusCode = 200
+        res.end(JSON.stringify(req.apps))
+    } ]
+    randPort = Math.floor(Math.random()* 9000 + 1000)
+    handleProxy = proxy({routers: routers})
+    
+    before (done)->
+      handleProxy.listen randPort, '0.0.0.0', done
 
+    after (done)->
+      handleProxy.close done
 
+    it 'mathc ok /status.taobao', (done)->
+      req.get {url: 'http://127.0.0.1:' + randPort + '/status.taobao'}, (err, data) ->
+        e(err).to.eql(null)
+        e(data.body).to.eql('success')
+        done()
+
+    it 'mathc ok host', (done)->
+      req.get {url: 'http://127.0.0.1:' + randPort,  headers: {host: 'www.monitor.com'}}, (err, data) ->
+        e(err).to.eql(null)
+        e(data.body).to.eql('[]')
+        done()
 
 
 
