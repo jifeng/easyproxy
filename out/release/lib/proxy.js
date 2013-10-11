@@ -17,12 +17,21 @@ Proxy = (function(_super) {
   __extends(Proxy, _super);
 
   function Proxy(options) {
-    var _this = this;
+    var routers,
+      _this = this;
     this.options = options || {};
+    routers = this.options.routers || [];
     this.apps = this.options.apps || [];
     this.server = http.createServer();
     this.server.on('request', function(req, res) {
-      var opt, proxy;
+      var opt, proxy, router, _i, _len;
+      for (_i = 0, _len = routers.length; _i < _len; _i++) {
+        router = routers[_i];
+        req.apps = res.apps = _this.apps;
+        if (router.match && router.handle && router.match(req, res)) {
+          return router.handle(req, res);
+        }
+      }
       opt = _this._requestOption(req);
       if (opt.path === void 0) {
         if (_this.options.noHandler !== void 0) {
