@@ -9,10 +9,13 @@ util     = require __dirname + '/util'
 class Proxy extends events.EventEmitter
   constructor : (options) ->
     @options = options || {}
-
+    routers = @options.routers || []
     @apps = @options.apps || []
     @server = http.createServer()
     @server.on 'request', (req, res) =>
+      for router in routers
+        req.apps = res.apps = @apps
+        return router.handle(req, res) if router.match && router.handle && router.match(req, res)
       opt =  @_requestOption(req)
       if opt.path is undefined
         if @options.noHandler isnt undefined
