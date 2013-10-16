@@ -161,6 +161,14 @@ describe 'proxy', () ->
         e(err).to.equal null
         e(data.body).to.eql 'work3 is running'
         done();
+ 
+    it 'register same host and prefix but not path', (done)->
+      p.register({appname: 'work3', host: 'www.work1.com', path: p3, prefix: '/work1'})
+      req.get {url: 'http://127.0.0.1:' + port + '/work1', headers: {host: 'www.work1.com'}}, (err, data) ->
+        e(err).to.equal null
+        e(data.body).to.eql 'work3 is running'
+        p.unregister({appname: 'work3', host: 'www.work1.com', path: p3, prefix: '/work1'})
+        done();
 
     it 'unregister', (done)->
       p.unregister({appname: 'work3', host: 'www.work3.com', path: p3, prefix: '/work3'})
