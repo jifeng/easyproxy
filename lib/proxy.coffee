@@ -60,7 +60,10 @@ class Proxy extends events.EventEmitter
     prefix = prefix + '/' if  prefix[prefix.length - 1] isnt '/'
     app.prefix = prefix
     flag = @_find({host: app.host, url: app.prefix})
-    @apps.push(app) if flag is undefined
+    if flag is undefined
+      @apps.unshift(app)
+    else if app.path isnt flag
+      @apps.unshift(app)
     cb && cb()
 
   # 删除应用
