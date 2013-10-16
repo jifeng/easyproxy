@@ -87,7 +87,9 @@ Proxy = (function(_super) {
       url: app.prefix
     });
     if (flag === void 0) {
-      this.apps.push(app);
+      this.apps.unshift(app);
+    } else if (app.path !== flag) {
+      this.apps.unshift(app);
     }
     return cb && cb();
   };
