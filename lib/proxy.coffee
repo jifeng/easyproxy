@@ -59,7 +59,7 @@ class Proxy extends events.EventEmitter
     prefix = app.prefix || '';
     prefix = prefix + '/' if  prefix[prefix.length - 1] isnt '/'
     app.prefix = prefix
-    flag = @_find({host: app.host, url: app.prefix})
+    flag = @find({host: app.host, url: app.prefix})
     if flag is undefined
       @apps.unshift(app)
     else if app.path isnt flag
@@ -85,6 +85,7 @@ class Proxy extends events.EventEmitter
     cb && cb()
 
   _find: (head) ->
+    target = []
     for value in @apps
       if value.status is 'on'
         #先域名,判断后缀
@@ -94,8 +95,14 @@ class Proxy extends events.EventEmitter
             len = value.prefix.length
 
             if url.length is len or url[len - 1] is '/' or url[len - 1] is ''
-              return value.path
-  
+              target.push value.path
+              # return value.path
+    target
+
+  find: (head)->
+    target = @_find(head);
+    target && target[0]
+
   _requestOption: (req) ->
     url = req.url
     urlObj = urllib.parse url
@@ -108,8 +115,8 @@ class Proxy extends events.EventEmitter
     # headers.connection = 'close'
     if host.indexOf(':') > 0
       host = host.split(':')[0]
-    path = @_find({url: pathname, host: host})
-    return {path: path, options: { url: pathname, host: host} } if !path
+    path = @find({url: pathname, host: host})
+    return {path: path, options: { url: pathname, host: host} } if !path 
     options = {
       socketPath: path,
       method: req.method,

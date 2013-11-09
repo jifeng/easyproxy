@@ -82,7 +82,7 @@ Proxy = (function(_super) {
       prefix = prefix + '/';
     }
     app.prefix = prefix;
-    flag = this._find({
+    flag = this.find({
       host: app.host,
       url: app.prefix
     });
@@ -127,7 +127,8 @@ Proxy = (function(_super) {
   };
 
   Proxy.prototype._find = function(head) {
-    var len, url, value, _i, _len, _ref;
+    var len, target, url, value, _i, _len, _ref;
+    target = [];
     _ref = this.apps;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       value = _ref[_i];
@@ -137,12 +138,19 @@ Proxy = (function(_super) {
           if (url.indexOf(value.prefix) === 0) {
             len = value.prefix.length;
             if (url.length === len || url[len - 1] === '/' || url[len - 1] === '') {
-              return value.path;
+              target.push(value.path);
             }
           }
         }
       }
     }
+    return target;
+  };
+
+  Proxy.prototype.find = function(head) {
+    var target;
+    target = this._find(head);
+    return target && target[0];
   };
 
   Proxy.prototype._requestOption = function(req) {
@@ -158,7 +166,7 @@ Proxy = (function(_super) {
     if (host.indexOf(':') > 0) {
       host = host.split(':')[0];
     }
-    path = this._find({
+    path = this.find({
       url: pathname,
       host: host
     });
