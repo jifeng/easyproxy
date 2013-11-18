@@ -4,12 +4,15 @@ urllib   = require 'url'
 http     = require 'http'
 util     = require __dirname + '/util'
 
-# apps: [{appname: '', host: '', path: '', prefix: ''}, ...]
+_defaultPath = (targets)->
+  targets && targets[0] && targets[0].path
 
+# apps: [{appname: '', host: '', path: '', prefix: ''}, ...]
 class Proxy extends events.EventEmitter
   constructor : (options) ->
     @options = options || {}
     routers = @options.routers || []
+    @filters = []
     @apps = @options.apps || []
     @server = http.createServer()
     @server.on 'request', (req, res) =>
@@ -24,6 +27,7 @@ class Proxy extends events.EventEmitter
         return res.end('app is not registered' + JSON.stringify(opt.options))
       proxy = http.request opt.options, (resProxy)->
         res.setHeader('Server',  (@options && @options.appname) || 'Easyproxy')
+        res.setHeader('HC-Socket', opt.options.socketPath)
         res.statusCode = resProxy.statusCode
         for k, v of resProxy.headers
           res.setHeader(util.upHeaderKey(k), v)
@@ -59,11 +63,16 @@ class Proxy extends events.EventEmitter
     prefix = app.prefix || '';
     prefix = prefix + '/' if  prefix[prefix.length - 1] isnt '/'
     app.prefix = prefix
-    flag = @_find({host: app.host, url: app.prefix})
-    if flag is undefined
+    targets = @_find({host: app.host, url: app.prefix})
+    if 0 is targets.length
       @apps.unshift(app)
-    else if app.path isnt flag
-      @apps.unshift(app)
+      return cb && cb()
+    flag = true
+    for target in targets
+      if app.path is target
+        flag = false
+        break
+    @apps.unshift(app) if flag is true
     cb && cb()
 
   # 删除应用
@@ -84,7 +93,12 @@ class Proxy extends events.EventEmitter
     @apps = []
     cb && cb()
 
+  clearFilters:(cb) ->
+    @filters = []
+    cb && cb()
+
   _find: (head) ->
+    targets = []
     for value in @apps
       if value.status is 'on'
         #先域名,判断后缀
@@ -94,8 +108,22 @@ class Proxy extends events.EventEmitter
             len = value.prefix.length
 
             if url.length is len or url[len - 1] is '/' or url[len - 1] is ''
-              return value.path
+              targets.push value
+    targets
+
   
+  find: (head)->
+    targets = @_find(head);
+
+    try
+      for func in @filters
+        if 'function' is typeof func
+          target = func({ targets: targets, request: head.request })
+          return target if target
+    catch err
+      console.log(err)
+    return _defaultPath(targets)
+
   _requestOption: (req) ->
     url = req.url
     urlObj = urllib.parse url
@@ -108,8 +136,8 @@ class Proxy extends events.EventEmitter
     # headers.connection = 'close'
     if host.indexOf(':') > 0
       host = host.split(':')[0]
-    path = @_find({url: pathname, host: host})
-    return {path: path, options: { url: pathname, host: host} } if !path
+    path = @find({url: pathname, host: host, headers: headers, request: req})
+    return {path: path, options: { url: pathname, host: host} } if !path 
     options = {
       socketPath: path,
       method: req.method,
@@ -120,6 +148,10 @@ class Proxy extends events.EventEmitter
 
   listen : (port, hostname, cb) ->
     @server.listen(port, hostname, cb);
+
+  bindFilter: (func, cb)->
+    @filters.unshift func
+    cb && cb();
 
   close: (cb)->
     @server.close(cb)

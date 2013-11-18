@@ -5,6 +5,7 @@ http = require 'http'
 req = require 'request'
 proxy = require '../lib/proxy'
 os = require 'os'
+fs = require 'fs'
 
 getInterIp = ()->
   rows = os.networkInterfaces().en0
@@ -51,8 +52,12 @@ p.register({appname: 'work1', host: 'www.work1.com', path: p1, prefix: '/work1'}
 p.register({appname: 'work2', host: 'www.work2.com', path: p2, prefix: '/work2'})
 port = Math.floor(Math.random()* 9000 + 1000)
 
+
 describe 'proxy', () ->
   before (done)->
+    fs.unlinkSync p1 if fs.existsSync p1
+    fs.unlinkSync p2 if fs.existsSync p2
+    fs.unlinkSync p3 if fs.existsSync p3
     server1.listen p1, ()->
       server2.listen p2, () ->
         server3.listen p3, () ->
@@ -64,6 +69,9 @@ describe 'proxy', () ->
     server2.close()
     server3.close()
     p.clear()
+    fs.unlinkSync p1 if fs.existsSync p1
+    fs.unlinkSync p2 if fs.existsSync p2
+    fs.unlinkSync p3 if fs.existsSync p3
     p.close(done)
 
   it 'mock work1 should ok', (done) ->
@@ -283,6 +291,3 @@ describe 'proxy', () ->
         e(err).to.eql(null)
         e(data.body).to.eql('[]')
         done()
-
-
-
