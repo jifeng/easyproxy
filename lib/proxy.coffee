@@ -27,6 +27,7 @@ class Proxy extends events.EventEmitter
         return res.end('app is not registered' + JSON.stringify(opt.options))
       proxy = http.request opt.options, (resProxy)->
         res.setHeader('Server',  (@options && @options.appname) || 'Easyproxy')
+        res.setHeader('HC-Socket', opt.options.socketPath)
         res.statusCode = resProxy.statusCode
         for k, v of resProxy.headers
           res.setHeader(util.upHeaderKey(k), v)
@@ -92,7 +93,7 @@ class Proxy extends events.EventEmitter
     @apps = []
     cb && cb()
 
-  clearFilters:() ->
+  clearFilters:(cb) ->
     @filters = []
     cb && cb()
 
@@ -113,11 +114,11 @@ class Proxy extends events.EventEmitter
   
   find: (head)->
     targets = @_find(head);
+
     try
       for func in @filters
         if 'function' is typeof func
-          target = func targets
-          # console.log target
+          target = func({ targets: targets, request: head.request })
           return target if target
     catch err
       console.log(err)
@@ -135,7 +136,7 @@ class Proxy extends events.EventEmitter
     # headers.connection = 'close'
     if host.indexOf(':') > 0
       host = host.split(':')[0]
-    path = @find({url: pathname, host: host, headers: headers})
+    path = @find({url: pathname, host: host, headers: headers, request: req})
     return {path: path, options: { url: pathname, host: host} } if !path 
     options = {
       socketPath: path,

@@ -48,6 +48,7 @@ Proxy = (function(_super) {
       proxy = http.request(opt.options, function(resProxy) {
         var k, v, _ref;
         res.setHeader('Server', (this.options && this.options.appname) || 'Easyproxy');
+        res.setHeader('HC-Socket', opt.options.socketPath);
         res.statusCode = resProxy.statusCode;
         _ref = resProxy.headers;
         for (k in _ref) {
@@ -141,7 +142,7 @@ Proxy = (function(_super) {
     return cb && cb();
   };
 
-  Proxy.prototype.clearFilters = function() {
+  Proxy.prototype.clearFilters = function(cb) {
     this.filters = [];
     return cb && cb();
   };
@@ -175,7 +176,10 @@ Proxy = (function(_super) {
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         func = _ref[_i];
         if ('function' === typeof func) {
-          target = func(targets);
+          target = func({
+            targets: targets,
+            request: head.request
+          });
           if (target) {
             return target;
           }
@@ -204,7 +208,8 @@ Proxy = (function(_super) {
     path = this.find({
       url: pathname,
       host: host,
-      headers: headers
+      headers: headers,
+      request: req
     });
     if (!path) {
       return {
