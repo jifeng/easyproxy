@@ -125,13 +125,18 @@ class Proxy extends events.EventEmitter
     return _defaultPath(targets)
 
   _requestOption: (req) ->
+    ip = req.headers['x-forwarded-for'] ||  
+     (req.connection && req.connection.remoteAddress) || 
+     (req.socket && req.socket.remoteAddress) ||
+     (req.connection && req.connection.socket && req.connection.socket.remoteAddress)
+    
     url = req.url
     urlObj = urllib.parse url
     pathname = urlObj.pathname
     pathname = pathname + '/'  if pathname[pathname.length - 1] isnt '/'
-    headers = req.headers
+    headers = req.headers || {}
     host = headers.host
-
+    # headers['X-Forwarded-For'] = headers['X-Forwarded-For'] || ip
     # 如果直接设置成close,返回到游览器的Connection 也会设置成 close
     # headers.connection = 'close'
     if host.indexOf(':') > 0

@@ -24,6 +24,7 @@ work1.use '/work1/post', connect.bodyParser()
 work1.use '/work1/post', (req, res, next) ->
   res.end JSON.stringify(req.body)
 work1.use (req, res, next)->
+  e(req.headers['x-forwarded-for']).not.eql(null)
   res.statusCode = 200
   res.setHeader 'Content-Type', 'text/plain'
   res.setHeader 'X-header', 'value'

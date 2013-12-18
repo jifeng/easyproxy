@@ -1,7 +1,7 @@
 {
   "name": "easyproxy",
   "main": "index.js",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "基于http的反向代理",
   "author": {
     "name": "继风",
