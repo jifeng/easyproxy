@@ -24,7 +24,6 @@ work1.use '/work1/post', connect.bodyParser()
 work1.use '/work1/post', (req, res, next) ->
   res.end JSON.stringify(req.body)
 work1.use (req, res, next)->
-  e(req.headers['x-forwarded-for']).not.eql(null)
   res.statusCode = 200
   res.setHeader 'Content-Type', 'text/plain'
   res.setHeader 'X-header', 'value'
@@ -42,6 +41,7 @@ p2 = './work2.sock'
 
 work3 = connect()
 work3.use (req, res, next)->
+  e(req.headers).to.have.key('x-forwarded-for')
   res.statusCode = 200
   res.setHeader 'Content-Type', 'text/plain'
   res.end 'work3 is running'

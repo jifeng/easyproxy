@@ -203,6 +203,7 @@ Proxy = (function(_super) {
     }
     headers = req.headers || {};
     host = headers.host;
+    headers['X-Forwarded-For'] = headers['X-Forwarded-For'] || ip;
     if (host.indexOf(':') > 0) {
       host = host.split(':')[0];
     }

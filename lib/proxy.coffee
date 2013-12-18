@@ -136,7 +136,7 @@ class Proxy extends events.EventEmitter
     pathname = pathname + '/'  if pathname[pathname.length - 1] isnt '/'
     headers = req.headers || {}
     host = headers.host
-    # headers['X-Forwarded-For'] = headers['X-Forwarded-For'] || ip
+    headers['X-Forwarded-For'] = headers['X-Forwarded-For'] || ip
     # 如果直接设置成close,返回到游览器的Connection 也会设置成 close
     # headers.connection = 'close'
     if host.indexOf(':') > 0
