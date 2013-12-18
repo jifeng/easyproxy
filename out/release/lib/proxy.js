@@ -193,15 +193,17 @@ Proxy = (function(_super) {
   };
 
   Proxy.prototype._requestOption = function(req) {
-    var headers, host, options, path, pathname, url, urlObj;
+    var headers, host, ip, options, path, pathname, url, urlObj;
+    ip = req.headers['x-forwarded-for'] || (req.connection && req.connection.remoteAddress) || (req.socket && req.socket.remoteAddress) || (req.connection && req.connection.socket && req.connection.socket.remoteAddress);
     url = req.url;
     urlObj = urllib.parse(url);
     pathname = urlObj.pathname;
     if (pathname[pathname.length - 1] !== '/') {
       pathname = pathname + '/';
     }
-    headers = req.headers;
+    headers = req.headers || {};
     host = headers.host;
+    headers['X-Forwarded-For'] = headers['X-Forwarded-For'] || ip;
     if (host.indexOf(':') > 0) {
       host = host.split(':')[0];
     }
