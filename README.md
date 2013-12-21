@@ -7,7 +7,7 @@ easyproxy
 
 ## 特点
 * 反向代理功能
-* 支持建立在http上的所有协议(HTTP, HTTPS, WebSockets)
+* 支持建立在http上的所有协议(HTTP, WebSockets)
 * 与[http-proxy](https://github.com/nodejitsu/node-http-proxy)相比，easyproxy跟后端具体服务是走本地socketPath，降低性能损耗
 * easyproxy只转发本台服务器上的服务,不跨服务器转发
 
