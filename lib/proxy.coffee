@@ -25,9 +25,9 @@ class Proxy extends events.EventEmitter
           return @options.noHandler req, res
         res.statusCode = 404
         return res.end('app is not registered' + JSON.stringify(opt.options))
-      proxy = http.request opt.options, (resProxy)->
+      proxy = http.request opt.options, (resProxy)=>
         res.setHeader('Server',  (@options && @options.appname) || 'Easyproxy')
-        res.setHeader('HC-Socket', opt.options.socketPath)
+        res.setHeader('HC-Socket', opt.options.socketPath) if @options.debug is true
         res.statusCode = resProxy.statusCode
         for k, v of resProxy.headers
           res.setHeader(util.upHeaderKey(k), v)

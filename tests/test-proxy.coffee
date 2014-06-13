@@ -53,6 +53,10 @@ p.register({appname: 'work1', host: 'www.work1.com', path: p1, prefix: '/work1'}
 p.register({appname: 'work2', host: 'www.work2.com', path: p2, prefix: '/work2'})
 port = Math.floor(Math.random()* 9000 + 1000)
 
+port2 = Math.floor(Math.random()* 9000 + 1000)
+
+pserver = proxy
+  debug: true
 
 describe 'proxy', () ->
   before (done)->
@@ -62,7 +66,8 @@ describe 'proxy', () ->
     server1.listen p1, ()->
       server2.listen p2, () ->
         server3.listen p3, () ->
-          p.listen port, '127.0.0.1', done
+          p.listen port, '127.0.0.1', ()->
+            pserver.listen port2, '127.0.0.1', done
 
 
   after (done)->
@@ -73,6 +78,8 @@ describe 'proxy', () ->
     fs.unlinkSync p1 if fs.existsSync p1
     fs.unlinkSync p2 if fs.existsSync p2
     fs.unlinkSync p3 if fs.existsSync p3
+    pserver.clear()
+    pserver.close()
     p.close(done)
 
   it 'mock work1 should ok', (done) ->
@@ -107,6 +114,7 @@ describe 'proxy', () ->
     req.get {url: 'http://127.0.0.1:' + port + '/work1', headers: {host: 'www.work1.com'}}, (err, data) ->
       e(err).to.equal null
       e(data.headers.server).to.eql 'Easyproxy'
+      e(data.headers['HC-Socket']).to.eql undefined
       e(data.headers['x-header']).to.eql 'value'
       e(data.body).to.eql 'work1 is running'
       done();
@@ -157,6 +165,22 @@ describe 'proxy', () ->
       e(err).to.equal null
       e(data.statusCode).to.equal 404
       done();
+
+  describe 'debug', ()->
+    beforeEach ()->
+      pserver.register({appname: 'work3', host: 'www.work3.com', path: p3, prefix: '/work3'})
+
+    afterEach ()->
+      pserver.unregister({appname: 'work3', host: 'www.work3.com', path: p3, prefix: '/work3'})
+
+    it 'HC-Socket', (done) ->
+      req.get {url: 'http://127.0.0.1:' + port2 + '/work3', headers: {host: 'www.work3.com'}}, (err, data) ->
+        e(err).to.equal null
+        e(data.body).to.eql 'work3 is running'
+        e(data.headers.server).to.eql 'Easyproxy'
+        e(data.headers['hc-socket']).to.eql p3
+        done();
+ 
 
   describe 'register unregister', ()->
     beforeEach ()->

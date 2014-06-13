@@ -47,8 +47,10 @@ Proxy = (function(_super) {
       }
       proxy = http.request(opt.options, function(resProxy) {
         var k, v, _ref;
-        res.setHeader('Server', (this.options && this.options.appname) || 'Easyproxy');
-        res.setHeader('HC-Socket', opt.options.socketPath);
+        res.setHeader('Server', (_this.options && _this.options.appname) || 'Easyproxy');
+        if (_this.options.debug === true) {
+          res.setHeader('HC-Socket', opt.options.socketPath);
+        }
         res.statusCode = resProxy.statusCode;
         _ref = resProxy.headers;
         for (k in _ref) {
