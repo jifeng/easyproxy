@@ -150,7 +150,7 @@ Proxy = (function(_super) {
   };
 
   Proxy.prototype._find = function(head) {
-    var len, targets, url, value, _i, _len, _ref;
+    var arr, i, item, len, prefix, targets, url, urlArr, value, _i, _j, _len, _len1, _ref;
     targets = [];
     _ref = this.apps;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -158,8 +158,20 @@ Proxy = (function(_super) {
       if (value.status === 'on') {
         if (head.host.indexOf(value.host) === 0) {
           url = head.url;
-          if (url.indexOf(value.prefix) === 0) {
-            len = value.prefix.length;
+          prefix = value.prefix;
+          if (prefix.indexOf(':')) {
+            arr = prefix.split('/');
+            urlArr = url.split('/');
+            for (i = _j = 0, _len1 = arr.length; _j < _len1; i = ++_j) {
+              item = arr[i];
+              if (0 === item.indexOf(':')) {
+                arr[i] = urlArr[i] || arr[i];
+              }
+            }
+            prefix = arr.join('/');
+          }
+          if (url.indexOf(prefix) === 0) {
+            len = prefix.length;
             if (url.length === len || url[len - 1] === '/' || url[len - 1] === '') {
               targets.push(value);
             }

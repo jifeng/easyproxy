@@ -104,9 +104,17 @@ class Proxy extends events.EventEmitter
         #先域名,判断后缀
         if head.host.indexOf(value.host) is 0
           url = head.url
-          if url.indexOf(value.prefix) is 0
-            len = value.prefix.length
+          prefix = value.prefix
+          #模糊匹配
+          if prefix.indexOf ':'
+            arr = prefix.split '/'
+            urlArr = url.split '/'
+            for item, i in arr
+              arr[i] = urlArr[i] or arr[i] if 0 is item.indexOf ':'
+            prefix = arr.join '/'
 
+          if url.indexOf(prefix) is 0
+            len = prefix.length
             if url.length is len or url[len - 1] is '/' or url[len - 1] is ''
               targets.push value
     targets

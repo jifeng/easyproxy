@@ -48,6 +48,8 @@ var p2 = './work2.sock'
 var p = proxy();
 p.register({appname: 'work1', host: 'www.work1.com', path: p1, prefix: '/work1'});
 p.register({appname: 'work2', host: 'www.work2.com', path: p2, prefix: '/work2'});
+p.register({appname: 'work3', host: 'www.work2.com', path: p2, prefix: '/:app/:id/show'});
+
 
 server1.listen(p1);
 server2.listen(p2);
@@ -62,6 +64,13 @@ work1 is running
 ```
 
 游览器访问www.work2.com/work2 , 结果
+
+```
+work2 is running
+```
+
+
+游览器访问www.work2.com/cdo/1/show , 结果
 
 ```
 work2 is running

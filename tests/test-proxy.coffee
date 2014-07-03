@@ -51,6 +51,8 @@ p3 = './work3.sock'
 p = proxy()
 p.register({appname: 'work1', host: 'www.work1.com', path: p1, prefix: '/work1'})
 p.register({appname: 'work2', host: 'www.work2.com', path: p2, prefix: '/work2'})
+p.register({appname: 'work3', host: 'www.work2.com', path: p2, prefix: '/:app/show'})
+
 port = Math.floor(Math.random()* 9000 + 1000)
 
 port2 = Math.floor(Math.random()* 9000 + 1000)
@@ -153,6 +155,19 @@ describe 'proxy', () ->
       e(err).to.equal null
       e(data.body).to.eql 'work2 is running'
       done();
+
+  it 'get www.work2.com :id/show should ok', (done) ->
+    req.get {url: 'http://127.0.0.1:' + port + '/cdo/show', headers: {host: 'www.work2.com'}}, (err, data) ->
+      e(err).to.equal null
+      e(data.body).to.eql 'work2 is running'
+      done();
+
+  it 'get www.work2.com :id/xxxx/show should not ok', (done) ->
+    req.get {url: 'http://127.0.0.1:' + port + '/cdo/xxxx/show', headers: {host: 'www.work2.com'}}, (err, data) ->
+      e(err).to.equal null
+      e(data.statusCode).to.equal 404
+      done();
+
 
   it 'get www.work2.com/work1 should not ok', (done) ->
     req.get {url: 'http://127.0.0.1:' + port + '/work1', headers: {host: 'www.work2.com'}}, (err, data) ->
