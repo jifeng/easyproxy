@@ -3,6 +3,7 @@ events   = require 'events'
 urllib   = require 'url'
 http     = require 'http'
 util     = require __dirname + '/util'
+clone    = require 'clone'
 
 _defaultPath = (targets)->
   targets && targets[0] && targets[0].path
@@ -54,6 +55,27 @@ class Proxy extends events.EventEmitter
         socket.pipe proxySocket
 
       req.pipe proxy
+  
+  #重新加载
+  reload: (apps)->
+    @apps = clone apps
+    @specify()
+
+  specify: ()->
+    #删除已经下线注册应用
+    apps = []
+    for app in @apps
+      apps.push app if app.status is 'on'
+    @app = apps
+    
+    map = {}
+    for app in @apps
+      host = app.host and app.host.trim()
+      if map[host] is undefined
+        map[host] = [ app ]
+      else
+        map[host].push app
+    @map = map
 
   # 注册应用
   # app: {appname: '', host: '', path: '', prefix: ''}
@@ -66,6 +88,7 @@ class Proxy extends events.EventEmitter
     targets = @_find({host: app.host, url: app.prefix})
     if 0 is targets.length
       @apps.unshift(app)
+      @specify()
       return cb && cb()
     flag = true
     for target in targets
@@ -73,6 +96,7 @@ class Proxy extends events.EventEmitter
         flag = false
         break
     @apps.unshift(app) if flag is true
+    @specify()
     cb && cb()
 
   # 删除应用
@@ -86,6 +110,7 @@ class Proxy extends events.EventEmitter
       prefix += '/' if prefix[prefix.length - 1] isnt '/'
       for value in @apps
         value.status = 'off' if value.host is app.host and value.prefix is prefix and value.path is app.path
+    @specify()
     cb && cb()
 
   # 清除所有注册的应用
@@ -97,9 +122,10 @@ class Proxy extends events.EventEmitter
     @filters = []
     cb && cb()
 
-  _find: (head) ->
+  _find: (head, apps) ->
+    apps = apps or @apps
     targets = []
-    for value in @apps
+    for value in apps
       if value.status is 'on'
         #先域名,判断后缀
         if head.host.indexOf(value.host) is 0
@@ -121,8 +147,8 @@ class Proxy extends events.EventEmitter
 
   
   find: (head)->
-    targets = @_find(head);
-
+    apps = @map[head.host] or []
+    targets = @_find(head, apps)
     try
       for func in @filters
         if 'function' is typeof func

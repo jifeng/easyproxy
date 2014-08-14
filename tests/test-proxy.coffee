@@ -6,6 +6,7 @@ req = require 'request'
 proxy = require '../lib/proxy'
 os = require 'os'
 fs = require 'fs'
+ep = require 'event-pipe'
 
 getInterIp = ()->
   rows = os.networkInterfaces().en0
@@ -54,8 +55,9 @@ p.register({appname: 'work2', host: 'www.work2.com', path: p2, prefix: '/work2'}
 p.register({appname: 'work3', host: 'www.work2.com', path: p2, prefix: '/:app/show'})
 
 port = Math.floor(Math.random()* 9000 + 1000)
-
 port2 = Math.floor(Math.random()* 9000 + 1000)
+reloadPort = Math.floor(Math.random()* 9000 + 1000)
+reloadProxy = proxy()
 
 pserver = proxy
   debug: true
@@ -65,12 +67,22 @@ describe 'proxy', () ->
     fs.unlinkSync p1 if fs.existsSync p1
     fs.unlinkSync p2 if fs.existsSync p2
     fs.unlinkSync p3 if fs.existsSync p3
-    server1.listen p1, ()->
-      server2.listen p2, () ->
-        server3.listen p3, () ->
-          p.listen port, '127.0.0.1', ()->
-            pserver.listen port2, '127.0.0.1', done
-
+    item = ep()
+    item.add ()->
+      server1.listen p1, @
+    item.add ()->  
+      server2.listen p2, @
+    item.add ()->
+      server3.listen p3, @
+    item.add ()->
+      p.listen port, '127.0.0.1', @
+    item.add ()->  
+      pserver.listen port2, '127.0.0.1', @
+    item.add ()->
+      reloadProxy.listen reloadPort, '0.0.0.0', @
+    item.add ()->
+      done()
+    item.run()
 
   after (done)->
     server1.close()
@@ -82,6 +94,7 @@ describe 'proxy', () ->
     fs.unlinkSync p3 if fs.existsSync p3
     pserver.clear()
     pserver.close()
+    reloadProxy.close()
     p.close(done)
 
   it 'mock work1 should ok', (done) ->
@@ -156,6 +169,13 @@ describe 'proxy', () ->
       e(data.body).to.eql 'work2 is running'
       done();
 
+  it 'reload success', (done)->
+    reloadProxy.reload p.apps
+    req.get {url: 'http://127.0.0.1:' + reloadPort + '/work2', headers: {host: 'www.work2.com'}}, (err, data) ->
+      e(err).to.equal null
+      e(data.body).to.eql 'work2 is running'
+      done()
+
   it 'get www.work2.com :id/show should ok', (done) ->
     req.get {url: 'http://127.0.0.1:' + port + '/cdo/show', headers: {host: 'www.work2.com'}}, (err, data) ->
       e(err).to.equal null
@@ -195,7 +215,6 @@ describe 'proxy', () ->
         e(data.headers.server).to.eql 'Easyproxy'
         e(data.headers['hc-socket']).to.eql p3
         done();
- 
 
   describe 'register unregister', ()->
     beforeEach ()->

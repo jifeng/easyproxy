@@ -34,6 +34,7 @@ p3 = './work3.sock'
 
 p = proxy()
 p.register({appname: 'work1', host: 'www.work1.com', path: p1, prefix: '/work1'})
+p.register({appname: 'work1', host: 'www.work1.com', path: p2, prefix: '/work1/test'})
 p.register({appname: 'work2', host: 'www.work2.com', path: p2, prefix: '/work2'})
 p.register({appname: 'work3', host: 'www.work1.com', path: p3, prefix: '/:app/:id/show'})
 

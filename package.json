@@ -1,7 +1,7 @@
 {
   "name": "easyproxy",
   "main": "index.js",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "基于http的反向代理",
   "author": {
     "name": "继风",
@@ -18,6 +18,9 @@
   "bugs": {
     "url": "https://github.com/jifeng/easyproxy/issues"
   },
+  "dependencies": {
+    "clone"  : "*"
+  },
   "devDependencies": {
     "request": "*",
     "connect": "*",
@@ -26,7 +29,8 @@
     "mocha": "*",
     "expect.js": "*",
     "jscover": "*",
-    "ws": "*"
+    "ws": "*",
+    "event-pipe": "*"
   },
   "scripts": {
     "prepublish": "make release",
