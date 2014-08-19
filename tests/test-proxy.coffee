@@ -345,8 +345,28 @@ describe 'proxy', () ->
         e(data.body).to.eql('success')
         done()
 
-    it 'mathc ok host', (done)->
+    it 'math ok host', (done)->
       req.get {url: 'http://127.0.0.1:' + randPort,  headers: {host: 'www.monitor.com'}}, (err, data) ->
         e(err).to.eql(null)
         e(data.body).to.eql('[]')
         done()
+
+  describe 'fix bug about when map not init when request comming', ()->
+    initProxyPort = Math.floor( Math.random() * 9000 + 1000)
+    initProxy = proxy()
+    before (done)->
+      initProxy.listen initProxyPort, '0.0.0.0', done
+      
+    it 'fail and success', (done)->    
+      ep(->
+        req {url: 'http://127.0.0.1:' + initProxyPort + '/work1', headers: {host: 'www.work1.com'}}, @
+      , (err, _$, body)->
+        e(body).to.contain 'app is not registered'
+        initProxy.register({appname: 'work1', host: 'www.work1.com', path: p1, prefix: '/work1'})
+        req {url: 'http://127.0.0.1:' + initProxyPort + '/work1', headers: {host: 'www.work1.com'}}, @
+      , (err, _$, body)->
+        e(body).to.eql 'work1 is running'
+        done()
+      ).run()
+
+

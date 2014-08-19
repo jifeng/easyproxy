@@ -14,7 +14,9 @@ class Proxy extends events.EventEmitter
     @options = options || {}
     routers = @options.routers || []
     @filters = []
+    @map = {}
     @apps = @options.apps || []
+    @specify()
     @server = http.createServer()
     @server.on 'request', (req, res) =>
       for router in routers
@@ -63,6 +65,7 @@ class Proxy extends events.EventEmitter
 
   specify: ()->
     #删除已经下线注册应用
+    @apps = @apps or []
     apps = []
     for app in @apps
       apps.push app if app.status is 'on'

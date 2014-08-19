@@ -28,7 +28,9 @@ Proxy = (function(_super) {
     this.options = options || {};
     routers = this.options.routers || [];
     this.filters = [];
+    this.map = {};
     this.apps = this.options.apps || [];
+    this.specify();
     this.server = http.createServer();
     this.server.on('request', function(req, res) {
       var opt, proxy, router, _i, _len;
@@ -90,6 +92,7 @@ Proxy = (function(_super) {
 
   Proxy.prototype.specify = function() {
     var app, apps, host, map, _i, _j, _len, _len1, _ref, _ref1;
+    this.apps = this.apps || [];
     apps = [];
     _ref = this.apps;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
