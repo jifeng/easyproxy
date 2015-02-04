@@ -1,7 +1,7 @@
 {
   "name": "easyproxy",
   "main": "index.js",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "基于http的反向代理",
   "author": {
     "name": "继风",
@@ -23,13 +23,13 @@
   },
   "devDependencies": {
     "request": "*",
-    "connect": "*",
+    "connect": "2.12.0",
     "supertest": "*",
     "coffee-script": "*",
     "mocha": "*",
     "expect.js": "*",
     "jscover": "*",
-    "ws": "*",
+    "ws": "0.4.32",
     "event-pipe": "*"
   },
   "scripts": {
