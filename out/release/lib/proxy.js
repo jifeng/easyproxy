@@ -246,8 +246,9 @@ Proxy = (function(_super) {
   };
 
   Proxy.prototype._requestOption = function(req) {
-    var headers, host, ip, options, path, pathname, url, urlObj;
+    var headers, host, ip, options, path, pathname, port, url, urlObj;
     ip = req.headers['x-forwarded-for'] || (req.connection && req.connection.remoteAddress) || (req.socket && req.socket.remoteAddress) || (req.connection && req.connection.socket && req.connection.socket.remoteAddress);
+    port = req.headers['x-forwarded-for-port'] || (req.connection && req.connection.remotePort) || (req.socket && req.socket.remotePort) || (req.connection && req.connection.socket && req.connection.socket.remotePort);
     url = req.url;
     urlObj = urllib.parse(url);
     pathname = urlObj.pathname;
@@ -257,6 +258,7 @@ Proxy = (function(_super) {
     headers = req.headers || {};
     host = headers.host;
     headers['X-Forwarded-For'] = headers['X-Forwarded-For'] || ip;
+    headers['X-Forwarded-For-Port'] = headers['X-Forwarded-For-Port'] || port;
     if (host.indexOf(':') > 0) {
       host = host.split(':')[0];
     }

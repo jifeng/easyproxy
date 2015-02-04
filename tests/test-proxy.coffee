@@ -43,6 +43,7 @@ p2 = './work2.sock'
 work3 = connect()
 work3.use (req, res, next)->
   e(req.headers).to.have.key('x-forwarded-for')
+  e(req.headers).to.have.key('x-forwarded-for-port')
   res.statusCode = 200
   res.setHeader 'Content-Type', 'text/plain'
   res.end 'work3 is running'

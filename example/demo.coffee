@@ -9,6 +9,9 @@ work1.use '/post', (req, res, next) ->
   return res.end JSON.stringify(req.body)
 
 work1.use (req, res, next)->
+  ip = req.headers['x-forwarded-for']
+  port = req.headers['x-forwarded-for-port']
+  console.log 'port', port
   res.statusCode = 200
   res.setHeader 'Content-Type', 'text/plain'
   res.end 'work1 is running'
