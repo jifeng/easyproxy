@@ -30,7 +30,8 @@
     "expect.js": "*",
     "jscover": "*",
     "ws": "0.4.32",
-    "event-pipe": "*"
+    "event-pipe": "*",
+    "options-stream": "*"
   },
   "scripts": {
     "prepublish": "make release",
