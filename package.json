@@ -1,7 +1,7 @@
 {
   "name": "easyproxy",
   "main": "index.js",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "基于http的反向代理",
   "author": {
     "name": "继风",
@@ -19,8 +19,7 @@
     "url": "https://github.com/jifeng/easyproxy/issues"
   },
   "dependencies": {
-    "clone"  : "*",
-    "options-stream": "*"
+    "clone"  : "*"
   },
   "devDependencies": {
     "request": "*",

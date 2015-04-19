@@ -4,7 +4,6 @@ urllib   = require 'url'
 http     = require 'http'
 util     = require __dirname + '/util'
 clone    = require 'clone'
-os       = require 'options-stream'
 
 _defaultPath = (targets)->
   targets && targets[0] && targets[0].path
@@ -40,35 +39,27 @@ class Proxy extends events.EventEmitter
 
     @server.on 'upgrade', (req, socket, upgradeHead) =>
       opt =  @_requestOption(req)
-
       if opt.path is undefined
         return socket.end(util.status404Line)
 
       opt.options.headers.Upgrade =  'websocket';
       proxy = http.request opt.options
       proxy.on 'upgrade', (res, proxySocket, upgradeHead)->
-        headersTemp =
-          'upgrade'    : 'websocket',
-          'connection' : 'Upgrade',
-        headers  = os headersTemp, res.headers
-        wsHeader = 
-          """
-          HTTP/1.1 101 Switching Protocols
-          #{
-            ( 
-              for name, value of headers
-                "#{name}: #{value}"
-            ).join '\r\n'
-          }
-          
-          
-          """
-        socket.write wsHeader
+        headers = [
+          'HTTP/1.1 101 Switching Protocols',
+          'Upgrade: websocket',
+          'Connection: Upgrade',
+          'Sec-WebSocket-Accept: ' + res.headers['sec-websocket-accept']
+        ];
+        if res.headers[ 'sec-websocket-protocol' ]
+          headers.push "Sec-Websocket-Protocol: #{res.headers[ 'sec-websocket-protocol' ]}"
+        headers = headers.concat('', '').join('\r\n');
+        socket.write headers
         proxySocket.pipe socket
         socket.pipe proxySocket
 
       req.pipe proxy
-
+  
   #重新加载
   reload: (apps)->
     @apps = clone apps
