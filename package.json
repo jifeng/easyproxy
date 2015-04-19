@@ -1,7 +1,7 @@
 {
   "name": "easyproxy",
   "main": "index.js",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "基于http的反向代理",
   "author": {
     "name": "继风",
@@ -30,8 +30,7 @@
     "expect.js": "*",
     "jscover": "*",
     "ws": "0.4.32",
-    "event-pipe": "*",
-    "options-stream": "*"
+    "event-pipe": "*"
   },
   "scripts": {
     "prepublish": "make release",
