@@ -19,7 +19,8 @@
     "url": "https://github.com/jifeng/easyproxy/issues"
   },
   "dependencies": {
-    "clone"  : "*"
+    "clone"  : "*",
+    "options-stream": "*"
   },
   "devDependencies": {
     "request": "*",

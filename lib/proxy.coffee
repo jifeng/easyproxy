@@ -4,6 +4,7 @@ urllib   = require 'url'
 http     = require 'http'
 util     = require __dirname + '/util'
 clone    = require 'clone'
+os       = require 'options-stream'
 
 _defaultPath = (targets)->
   targets && targets[0] && targets[0].path
@@ -22,7 +23,7 @@ class Proxy extends events.EventEmitter
       for router in routers
         req.apps = res.apps = @apps
         return router.handle(req, res) if router.match && router.handle && router.match(req, res)
-      opt =  @_requestOption(req)
+      opt =  @_requestOption(req, { connection: 'close'} )
       if opt.path is undefined
         if @options.noHandler isnt undefined
           return @options.noHandler req, res
@@ -38,7 +39,7 @@ class Proxy extends events.EventEmitter
       req.pipe proxy
 
     @server.on 'upgrade', (req, socket, upgradeHead) =>
-      opt =  @_requestOption(req)
+      opt =  @_requestOption(req, true)
       if opt.path is undefined
         return socket.end(util.status404Line)
 
@@ -163,7 +164,7 @@ class Proxy extends events.EventEmitter
       console.log(err)
     return _defaultPath(targets)
 
-  _requestOption: (req) ->
+  _requestOption: (req, headersOptions) ->
     ip = req.headers['x-forwarded-for'] or  
      (req.connection and req.connection.remoteAddress) or 
      (req.socket and req.socket.remoteAddress) or
@@ -185,6 +186,7 @@ class Proxy extends events.EventEmitter
     headers['X-Forwarded-For-Port'] = headers['X-Forwarded-For-Port'] or port
     # 如果直接设置成close,返回到游览器的Connection 也会设置成 close
     # headers.connection = 'close'
+    headers = os headers, headersOptions 
     if host.indexOf(':') > 0
       host = host.split(':')[0]
     path = @find({url: pathname, host: host, headers: headers, request: req})
