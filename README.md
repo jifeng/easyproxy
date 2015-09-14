@@ -8,8 +8,7 @@ easyproxy
 ## 特点
 * 反向代理功能
 * 支持建立在http上的所有协议(HTTP, WebSockets)
-* easyproxy跟后端具体服务是走本地UNIX socket，降低性能损耗
-* easyproxy只转发本台服务器上的服务,不跨服务器转发
+* easyproxy优先跟后端具体服务是走本地UNIX socket，降低性能损耗.之后再去选择调用远端服务
 
 ## 安装
 ```bash
@@ -49,7 +48,7 @@ var p = proxy();
 p.register({appname: 'work1', host: 'www.work1.com', path: p1, prefix: '/work1'});
 p.register({appname: 'work2', host: 'www.work2.com', path: p2, prefix: '/work2'});
 p.register({appname: 'work3', host: 'www.work2.com', path: p2, prefix: '/:app/:id/show'});
-
+p.register({appname: 'work2', host: 'www.work2.com', remote: '10.1.17.169:8080', prefix: '/work3'});
 
 server1.listen(p1);
 server2.listen(p2);

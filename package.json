@@ -1,7 +1,7 @@
 {
   "name": "easyproxy",
   "main": "index.js",
-  "version": "0.0.24",
+  "version": "0.0.25",
   "description": "基于http的反向代理",
   "author": {
     "name": "继风",
@@ -19,19 +19,19 @@
     "url": "https://github.com/jifeng/easyproxy/issues"
   },
   "dependencies": {
-    "clone"  : "*",
-    "options-stream": "*"
+    "clone"  : "1.0.2",
+    "options-stream": "0.0.8"
   },
   "devDependencies": {
-    "request": "*",
+    "request": "2.61.0",
     "connect": "2.12.0",
-    "supertest": "*",
-    "coffee-script": "*",
-    "mocha": "*",
-    "expect.js": "*",
-    "jscover": "*",
+    "supertest": "1.1.0",
+    "coffee-script": "1.10.0",
+    "mocha": "1.21.5",
+    "expect.js": "0.3.1",
+    "jscover": "1.0.0",
     "ws": "0.4.32",
-    "event-pipe": "*"
+    "event-pipe": "0.0.5"
   },
   "scripts": {
     "prepublish": "make release",

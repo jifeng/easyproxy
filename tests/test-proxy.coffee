@@ -50,10 +50,22 @@ work3.use (req, res, next)->
 server3 = http.createServer(work3)
 p3 = './work3.sock'
 
+
+work4 = connect()
+work4.use (req, res, next)->
+  e(req.headers).to.have.key('x-forwarded-for')
+  e(req.headers).to.have.key('x-forwarded-for-port')
+  res.statusCode = 200
+  res.setHeader 'Content-Type', 'text/plain'
+  res.end 'work4 is running'
+server4 = http.createServer(work4)
+port4 = Math.floor(Math.random()* 9000 + 1000)
+
 p = proxy()
 p.register({appname: 'work1', host: 'www.work1.com', path: p1, prefix: '/work1'})
 p.register({appname: 'work2', host: 'www.work2.com', path: p2, prefix: '/work2'})
 p.register({appname: 'work3', host: 'www.work2.com', path: p2, prefix: '/:app/show'})
+p.register({appname: 'work4', host: 'www.work1.com', remote: "127.0.0.1:#{port4}", prefix: '/work4'})
 
 port = Math.floor(Math.random()* 9000 + 1000)
 port2 = Math.floor(Math.random()* 9000 + 1000)
@@ -75,6 +87,8 @@ describe 'proxy', () ->
       server2.listen p2, @
     item.add ()->
       server3.listen p3, @
+    item.add ()->
+      server4.listen port4, @
     item.add ()->
       p.listen port, '127.0.0.1', @
     item.add ()->  
@@ -200,6 +214,14 @@ describe 'proxy', () ->
     req.get {url: 'http://127.0.0.1:' + port, headers: {host: 'www.xxxxx.com'}}, (err, data) ->
       e(err).to.equal null
       e(data.statusCode).to.equal 404
+      done();
+
+  it 'get www.work4.com should ok', (done) ->
+    req.get {url: 'http://127.0.0.1:' + port + '/work4', headers: {host: 'www.work1.com'}}, (err, data) ->
+      e(err).to.equal null
+      e(data.headers.server).to.eql 'Easyproxy'
+      e(data.headers['HC-Socket']).to.eql undefined
+      e(data.body).to.eql 'work4 is running'
       done();
 
   describe 'debug', ()->

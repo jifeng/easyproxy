@@ -7,7 +7,9 @@ clone    = require 'clone'
 os       = require 'options-stream'
 
 _defaultPath = (targets)->
-  targets && targets[0] && targets[0].path
+  path = targets && targets[0] && targets[0].path
+  remote = targets && targets[0] && targets[0].remote
+  {path, remote}
 
 # apps: [{appname: '', host: '', path: '', prefix: ''}, ...]
 class Proxy extends events.EventEmitter
@@ -24,7 +26,7 @@ class Proxy extends events.EventEmitter
         req.apps = res.apps = @apps
         return router.handle(req, res) if router.match && router.handle && router.match(req, res)
       opt =  @_requestOption(req, { connection: 'close'} )
-      if opt.path is undefined
+      if opt.path is undefined and opt.remote is undefined
         if @options.noHandler isnt undefined
           return @options.noHandler req, res
         res.statusCode = 404
@@ -40,7 +42,7 @@ class Proxy extends events.EventEmitter
 
     @server.on 'upgrade', (req, socket, upgradeHead) =>
       opt =  @_requestOption(req, true)
-      if opt.path is undefined
+      if opt.path is undefined  and opt.remote is undefined
         return socket.end(util.status404Line)
 
       opt.options.headers.Upgrade =  'websocket';
@@ -189,15 +191,31 @@ class Proxy extends events.EventEmitter
     headers = os headers, headersOptions 
     if host.indexOf(':') > 0
       host = host.split(':')[0]
-    path = @find({url: pathname, host: host, headers: headers, request: req})
-    return {path: path, options: { url: pathname, host: host} } if !path 
+    target = @find({url: pathname, host: host, headers: headers, request: req})
+    path = undefined
+    remote = undefined
+    return {path: path, options: { url: pathname, host: host} } if !target
+  
+    if typeof target isnt 'string'
+      path = target.path
+      remote = target.remote
+    else
+      path = target
+
     options = {
-      socketPath: path,
       method: req.method,
       headers: headers,
       path: req.url
     }
-    return { path: path, options: options }
+
+    if path
+      options.socketPath = path 
+    else if remote
+      arr = remote.split(':')
+      options.host = arr[0]
+      options.port = arr[1] or 80
+
+    return { path: path, options: options, remote: remote }
 
   listen : (port, hostname, cb) ->
     @server.listen(port, hostname, cb);
